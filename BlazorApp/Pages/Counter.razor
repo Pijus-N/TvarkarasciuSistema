@@ -1,0 +1,141 @@
+﻿@page "/counter"
+
+ 
+<p id="date-time"></p> 
+<PageTitle>Timetable</PageTitle>
+
+<div class="month">
+  <ul>
+    <li class="prev">&#10094;</li>
+    <li class="next">&#10095;</li>
+    <li>@monthName<br><span style="font-size:18px">@year</span></li>
+  </ul>
+</div>
+
+
+
+<table class="table">
+        <thead>
+            <tr>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i=0; i<week.daySlots[0].timesList.Count; i++)
+            {
+                <tr>
+                    @for(int j=0; j<6; j++){
+                    <td><a href="#child4">@week.daySlots[0].timesList[i].ToString()</a></td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+
+@code {
+    public class TimeSlot{
+        public int time ;
+
+        public TimeSlot(int time){
+            this.time = time;
+
+        }
+
+        public TimeSlot(){
+
+        }
+
+            public override string ToString()
+            {
+                return time.ToString()+":00";
+            }
+
+    
+
+    }
+    public class DaySlot{
+        public List<TimeSlot> timesList = new List<TimeSlot>();
+
+       
+        public DaySlot(){
+            timesList = new List<TimeSlot>();
+        }
+        public void AddTimeSlot(TimeSlot timeSlot){
+           this.timesList.Add(timeSlot);
+        }
+    }
+    public class Week{
+        public List<DaySlot> daySlots = new List<DaySlot>();
+        public void AddDaySlot(DaySlot daySlot){
+           this.daySlots.Add(daySlot);
+        }
+
+      
+    
+    public Week(){
+        daySlots = new List<DaySlot>();
+
+    }
+    }
+    private int currentCount = 0;
+    Week week = new Week();
+
+    DateTime localDate ;
+    private string _displaydate;
+    string monthName;
+    string year;
+    TimeSlot timetest;
+    
+    private void IncrementCount()
+    {
+        Console.WriteLine(localDate);
+        currentCount++;
+    }
+
+        protected override void OnInitialized()
+        {
+           _displaydate = DateTime.Now.ToString("U");
+           localDate = DateTime.Now;
+           string temp = DateTime.Now.Month.ToString();
+           //monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(8);
+           monthName= DateTime.Now.Month.ToString();
+           year = DateTime.Now.Year.ToString();
+          // week =new Week(month
+          timetest = new TimeSlot(50);
+          
+
+          for(int i=0; i<7; i++){
+            DaySlot dayslot = new DaySlot();
+            for(int j=8; j<18; j++){
+               
+                TimeSlot timeslot = new TimeSlot(j);
+                dayslot.AddTimeSlot(timeslot);
+                //Console.WriteLine(dayslot.timesList[0]);
+
+
+
+          }
+          week.AddDaySlot(dayslot);
+          Console.WriteLine(week.daySlots[0].timesList[1].ToString());
+        }
+        
+      
+
+
+
+   
+}
+}
+
+
+
+
