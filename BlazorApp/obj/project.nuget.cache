@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "4TJt0FUsL5bNL9jL6TCfT466bhCXAXcusFc2tF5g+P1K21gJLNTL8LbV2hLgspLWwjDTrnWKDkVg/VMMnplVuA==",
+  "dgSpecHash": "BO0JCIglXugTZKsidQLq4ySj3l+KhomXKUqSgcoLI59O/F30n3STkRJaiGIVJ6votXVXoePUZ61yV08pzxV5fw==",
   "success": true,
-  "projectFilePath": "D:\\Failai\\TvarkarasciuSistema\\BlazorApp\\BlazorApp.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "D:\\aqwe\\3k2p\\IS\\TvarkarasciuSistema\\BlazorApp\\BlazorApp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Intel\\.nuget\\packages\\dapper\\2.0.123\\dapper.2.0.123.nupkg.sha512",
+    "C:\\Users\\Intel\\.nuget\\packages\\mysqlconnector\\2.2.5\\mysqlconnector.2.2.5.nupkg.sha512"
+  ],
   "logs": []
 }

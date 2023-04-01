@@ -1,5 +1,5 @@
 is_global = true
-build_property.TargetFramework = net7.0
+build_property.TargetFramework = net6.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
 build_property.ProjectTypeGuids = 
@@ -8,49 +8,53 @@ build_property.PlatformNeutralAssembly =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = BlazorApp
 build_property.RootNamespace = BlazorApp
-build_property.ProjectDir = d:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\
+build_property.ProjectDir = D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\
 build_property.RazorLangVersion = 6.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = d:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp
+build_property.MSBuildProjectDirectory = D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp
 build_property._RazorSourceGeneratorDebug = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/App.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Counter.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/FetchData.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/FetchData.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRmV0Y2hEYXRhLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Index.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Shared/SurveyPrompt.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Registruotis.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0cnVvdGlzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Shared/SurveyPrompt.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/_Imports.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Shared/MainLayout.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-3dsd3z3yec
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Shared/NavMenu.razor]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Shared/NavMenu.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-7cxxmz0cwl
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Error.cshtml]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[d:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/_Host.cshtml]
+[D:/aqwe/3k2p/IS/TvarkarasciuSistema/BlazorApp/Pages/_Host.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0hvc3QuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
