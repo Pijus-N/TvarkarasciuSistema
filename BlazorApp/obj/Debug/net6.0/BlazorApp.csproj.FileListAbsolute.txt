@@ -28,3 +28,13 @@ D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\obj\Debug\net6.0\ref\BlazorApp.dll
 D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\MySqlConnector.dll
 D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\obj\Debug\net6.0\BlazorApp.csproj.CopyComplete
 D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Dapper.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Blazored.SessionStorage.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.AspNetCore.Authorization.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.AspNetCore.Components.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.AspNetCore.Components.Forms.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.AspNetCore.Components.Web.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.AspNetCore.Metadata.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.Extensions.Logging.Abstractions.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\Microsoft.JSInterop.dll
+D:\aqwe\3k2p\IS\TvarkarasciuSistema\BlazorApp\bin\Debug\net6.0\System.IO.Pipelines.dll

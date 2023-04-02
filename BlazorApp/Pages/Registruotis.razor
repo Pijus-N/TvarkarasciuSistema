@@ -5,6 +5,10 @@
 @using Dapper
 @inject IJSRuntime js
 @inject IConfiguration _config
+@inject NavigationManager navManager
+
+<PageTitle>Registracija</PageTitle>
+<h1>Registracija</h1>
 
 <EditForm Model="@model" OnValidSubmit="@RegisterUser" OnInvalidSubmit="@InvalidSubmit">
     <DataAnnotationsValidator />
@@ -54,7 +58,9 @@
 
     private Naudotojas model = new Naudotojas();
 
-    private async Task RegisterUser()
+    // makes a user in the database
+    // does not check if there is a user registered with that email.
+    private async Task RegisterUser() 
     {
         loading = true;     // silly button effect to show that something is happening
 
@@ -66,14 +72,16 @@
         + model.gimimoData + "','"
         + model.role + "');";
 
-        string connstring = _config.GetConnectionString("default");
-        using (IDbConnection connection = new MySqlConnection(connstring))
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");         // the "default" connection string is located in appsettings.json
+        using (IDbConnection connection = new MySqlConnection(connstring))  // connect to db using MySqlConnector
         {
             await connection.ExecuteAsync(sql, new { });
         }
 
         loading = false;
         await js.InvokeVoidAsync("alert", "Sėkmingai prisiregistruota");
+        navManager.NavigateTo("/prisijungti", true);
     }
 
     private async Task InvalidSubmit()

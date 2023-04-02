@@ -17,7 +17,7 @@ namespace BlazorServer.Models
         [StringLength(20, ErrorMessage = "Per ilgas slaptažodis.")]
         public string slaptazodis { get; set; }
         [Required]
-        public DateOnly gimimoData { get; set; }
+        public DateTime gimimoData { get; set; }
         public string role { get; set; }
 
     }

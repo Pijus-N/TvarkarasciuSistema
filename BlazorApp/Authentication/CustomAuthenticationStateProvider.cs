@@ -13,6 +13,7 @@ namespace BlazorServer.Authentication
         {
             _sessionStorage = sessionStorage;
         }
+
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             try
@@ -23,7 +24,7 @@ namespace BlazorServer.Authentication
                     return await Task.FromResult(new AuthenticationState(_anonymous));
                 var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, userSession.UserName),
+                    new Claim(ClaimTypes.Name, userSession.Name),
                     new Claim(ClaimTypes.Role, userSession.Role)
                 }, "CustomAuth"));
                 return await Task.FromResult(new AuthenticationState(claimsPrincipal));
@@ -33,6 +34,7 @@ namespace BlazorServer.Authentication
                 return await Task.FromResult(new AuthenticationState(_anonymous));
             }                        
         }
+
         public async Task UpdateAuthenticationState(UserSession userSession)
         {
             ClaimsPrincipal claimsPrincipal;
@@ -42,7 +44,7 @@ namespace BlazorServer.Authentication
                 await _sessionStorage.SetAsync("UserSession", userSession);
                 claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, userSession.UserName),
+                    new Claim(ClaimTypes.Name, userSession.Name),
                     new Claim(ClaimTypes.Role, userSession.Role)
                 }));
             }
