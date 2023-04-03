@@ -1,0 +1,97 @@
+﻿@page "/registruotis"
+@using BlazorServer.Models
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+
+<PageTitle>Registracija</PageTitle>
+<h1>Registracija</h1>
+
+<EditForm Model="@model" OnValidSubmit="@RegisterUser" OnInvalidSubmit="@InvalidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary/>
+    <div class="form-group">
+        <label>Vardas</label>
+        <InputText @bind-Value="model.vardas" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Pavardė</label>
+        <InputText @bind-Value="model.pavarde" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>El. Paštas</label>
+        <InputText @bind-Value="model.elPastas" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Slaptažodis</label>
+        <InputText @bind-Value="model.slaptazodis" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Gimimo data</label>
+        <InputDate @bind-Value="model.gimimoData" class="form-control" />
+    </div>
+    <div>
+        <label>Role</label>
+        <InputSelect @bind-Value="model.role" class="form-select" required="required">
+            <option value="">pasirinkite rolę (temporary)</option>
+            <option value="mokytojas">mokytojas</option>
+            <option value="mokinys">mokinys</option>
+            <option value="globejas">globejas</option>
+            <option value="administratorius">administratorius</option>
+        </InputSelect>
+    </div><br>
+    <button disabled="@loading" class="btn btn-primary" type="submit">
+        @if (loading) 
+        {
+            <span class="spinner-border spinner-border-sm mr-1"></span>
+        }
+        Registruotis
+    </button>
+</EditForm>
+
+
+@code {
+    bool loading = false;
+
+    private Naudotojas model = new Naudotojas();
+
+    // makes a user in the database
+    // does not check if there is a user registered with that email.
+    private async Task RegisterUser() 
+    {
+        loading = true;     // silly button effect to show that something is happening
+
+        string sql = "INSERT INTO naudotojai (vardas, pavarde, elPastas, slaptazodis, gimimoData, role) VALUES('"
+        + model.vardas + "','"
+        + model.pavarde + "','"
+        + model.elPastas + "','"
+        + model.slaptazodis + "','"
+        + model.gimimoData + "','"
+        + model.role + "');";
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");         // the "default" connection string is located in appsettings.json
+        using (IDbConnection connection = new MySqlConnection(connstring))  // connect to db using MySqlConnector
+        {
+            await connection.ExecuteAsync(sql, new { });
+        }
+
+        loading = false;
+        await js.InvokeVoidAsync("alert", "Sėkmingai prisiregistruota");
+        navManager.NavigateTo("/prisijungti", true);
+    }
+
+    private async Task InvalidSubmit()
+    {
+        await js.InvokeVoidAsync("alert", "Neteisingi duomenys!");
+    }
+
+}
+
+
+
+
+
