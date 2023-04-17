@@ -42,8 +42,17 @@
             {
                 <tr>
                     @for(int j=0; j<6; j++){
-                    <td><a href="addnewlesson/@week.daySlots[j].timesList[i].FullToString()">@week.daySlots[j].timesList[i].ToString()</a></td>
-                    }
+                        if(true){
+                            if(@week.daySlots[j].timesList[i].info!=null){
+                                <td><a href="editlesson/@week.daySlots[j].timesList[i].id.ToString()">@week.daySlots[j].timesList[i].ToString()</a></td>
+                            }
+                            else
+                            {
+                                <td><a href="addnewlesson/@week.daySlots[j].timesList[i].FullToString()">@week.daySlots[j].timesList[i].ToString()</a></td>
+                          
+                            }
+                        }
+                     }
                 </tr>
             }
             }
@@ -67,6 +76,7 @@
         public int time;
         public string fullDate;
         public string info;
+        public int id;
 
         public TimeSlot(int time,string fullDate){
             this.time = time;
@@ -155,9 +165,11 @@
                 TimeSlot timeslot = new TimeSlot(j,currentDate);
 
                 foreach(Pamoka pamoka in allLessons) {
-                    if(localDate.ToString("MM/dd/yyyy")==pamoka.dateInFormat.ToShortDateString()){
+                    Console.WriteLine(localDate.ToString("dd/MM/yyyy")+"    "+pamoka.dateInFormat.ToShortDateString());
+                    if(localDate.ToString("dd/MM/yyyy")==pamoka.dateInFormat.ToShortDateString()){
                         if(pamoka.time==j){
                         timeslot.info = pamoka.instrument+" "+pamoka.type;
+                        timeslot.id = pamoka.id;
                         break;
                         }
                     }
@@ -195,9 +207,13 @@
                 
                 foreach(var row in rows){
                     Pamoka pamoka = row;
-                    pamoka.dateInFormat = DateTime.Parse(pamoka.date);
+                    //Console.WriteLine("Data");
+                    //Console.WriteLine(pamoka.date);
+                    //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
+                    string dataInString = pamoka.date.Split(' ')[0];
+                    pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
                     allLessons.Add(pamoka);
-                    Console.WriteLine(allLessons.Count);
+                    //Console.WriteLine(allLessons.Count);
                     
 
                 }
