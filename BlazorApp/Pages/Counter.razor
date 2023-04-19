@@ -1,4 +1,4 @@
-﻿@page "/counter"
+﻿@page "/counter/{myvalue}"
 @using BlazorServer.Models
 @using BlazorServer.Authentication
 @using System.Data
@@ -9,229 +9,336 @@
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authStateProvider
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
- 
-<p id="date-time"></p> 
+
+
+<p id="date-time"></p>
 <PageTitle>Timetable</PageTitle>
 
 <div class="month">
-  <ul>
-    <li class="prev">&#10094;</li>
-    <li class="next">&#10095;</li>
-    <li>@monthName<br><span style="font-size:18px">@year</span></li>
-  </ul>
+    <ul>
+        <li @onclick="@(() => LoadPreviousWeek())" class="prev">&#10094;</li>
+        <li @onclick="@(() => LoadNextWeek())" class="next">&#10095;</li>
+        <li><span style="font-size:18px">@GetYearInterval()</span><br>@GetMonthInterval()<br><span style="font-size:14px">@GetDaysInterval()</span></li>
+    </ul>
 </div>
 
 
 
 <table class="table">
-        <thead>
-            <tr>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-                <th>Saturday</th>
-                
-            </tr>
-        </thead>
-        <tbody>
-            @if (dataLoaded)
-            {
-                @for (int i=0; i<week.daySlots[0].timesList.Count; i++)
+    <thead>
+        <tr>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+            <th>Saturday</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @if (dataLoaded)
+        {
+            @for (int i = 0; i < week.daySlots[0].timesList.Count; i++)
             {
                 <tr>
-                    @for(int j=0; j<6; j++){
-                        if(true){
-                            if(@week.daySlots[j].timesList[i].info!=null){
-                                <td><a href="editlesson/@week.daySlots[j].timesList[i].id.ToString()">@week.daySlots[j].timesList[i].ToString()</a></td>
+                    @for (int j = 0; j < 6; j++)
+                    {
+                        if (true)
+                        {
+                            if (@week.daySlots[j].timesList[i].info != null)
+                            {
+                                <td><a
+                                        href="editlesson/@week.daySlots[j].timesList[i].id.ToString()">@week.daySlots[j].timesList[i].ToString()</a>
+                                </td>
                             }
                             else
                             {
-                                <td><a href="addnewlesson/@week.daySlots[j].timesList[i].FullToString()">@week.daySlots[j].timesList[i].ToString()</a></td>
-                          
+                                <td><a
+                                        href="addnewlesson/@week.daySlots[j].timesList[i].FullToString()">@week.daySlots[j].timesList[i].ToString()</a>
+                                </td>
+
                             }
                         }
-                     }
+                    }
                 </tr>
             }
-            }
-            else
-            {
-                <div class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-            }
-            
-        </tbody>
-    </table>
+        }
+        else
+        {
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        }
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    </tbody>
+</table>
+
+
 
 
 @code {
+    [Parameter]
+    public string myvalue { get; set; }
     private List<Pamoka> allLessons = new List<Pamoka>();
     private bool dataLoaded = false;
-    public class TimeSlot{
+
+    public UserSession user = new UserSession();
+    public List<Naudotojas> person;
+
+    DateTime currentViewingWeek{ get; set; }
+    public class TimeSlot
+    {
         public int time;
         public string fullDate;
         public string info;
         public int id;
 
-        public TimeSlot(int time,string fullDate){
+        public TimeSlot(int time, string fullDate)
+        {
             this.time = time;
             this.fullDate = fullDate;
 
         }
 
-        public TimeSlot(){
+        public TimeSlot()
+        {
 
         }
 
         public override string ToString()
         {
-            if(info!=null){
-                return time.ToString()+":00 "+info;
+            if (info != null)
+            {
+                return time.ToString() + ":00 " + info;
             }
 
-            return time.ToString()+":00";
+            return time.ToString() + ":00";
         }
         public string FullToString()
         {
-            return fullDate+'-'+ time.ToString();
+            return fullDate + '-' + time.ToString();
         }
 
-    
+
 
     }
-    public class DaySlot{
+    public class DaySlot
+    {
         public List<TimeSlot> timesList = new List<TimeSlot>();
 
-       
-        public DaySlot(){
+
+        public DaySlot()
+        {
             timesList = new List<TimeSlot>();
         }
-        public void AddTimeSlot(TimeSlot timeSlot){
-           this.timesList.Add(timeSlot);
+        public void AddTimeSlot(TimeSlot timeSlot)
+        {
+            this.timesList.Add(timeSlot);
         }
     }
-    public class Week{
+    public class Week
+    {
         public List<DaySlot> daySlots = new List<DaySlot>();
-        public void AddDaySlot(DaySlot daySlot){
-           this.daySlots.Add(daySlot);
+        public void AddDaySlot(DaySlot daySlot)
+        {
+            this.daySlots.Add(daySlot);
         }
 
-      
-    
-    public Week(){
-        daySlots = new List<DaySlot>();
 
-    }
+
+        public Week()
+        {
+            daySlots = new List<DaySlot>();
+
+        }
     }
     private int currentCount = 0;
     Week week = new Week();
 
-    DateTime localDate ;
+    DateTime localDate;
     private string _displaydate;
     string monthName;
     string year;
     TimeSlot timetest;
-    
-    private void IncrementCount()
+
+
+
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine(localDate);
-        currentCount++;
-    }
 
-        protected override async Task OnInitializedAsync()
+        await ReadDbData();
+        await GetSessionUser();
+        //Console.WriteLine(user.Role);
+        _displaydate = DateTime.Now.ToString("U");
+        localDate = DateTime.Now;
+        string temp = DateTime.Now.Month.ToString();
+
+        monthName = DateTime.Now.Month.ToString();
+        year = DateTime.Now.Year.ToString();
+
+        while (localDate.DayOfWeek.ToString() != "Monday")
         {
-           await ReadDbData();
-           _displaydate = DateTime.Now.ToString("U");
-           localDate = DateTime.Now;
-           string temp = DateTime.Now.Month.ToString();
 
-           monthName= DateTime.Now.Month.ToString();
-           year = DateTime.Now.Year.ToString();
-
-          while(localDate.DayOfWeek.ToString()!="Monday"){
-
-            localDate =localDate.AddDays(-1);
-          }
-
-          for(int i=0; i<7; i++){
+            localDate = localDate.AddDays(-1);
+        }
+        currentViewingWeek = localDate;
+        for (int i = 0; i < 7; i++)
+        {
             DaySlot dayslot = new DaySlot();
-            for(int j=8; j<18; j++){
-                string currentDate = localDate.Year.ToString()+'-'+localDate.Month.ToString()+'-'+localDate.Day.ToString();
-                TimeSlot timeslot = new TimeSlot(j,currentDate);
+            for (int j = 8; j < 18; j++)
+            {
+                string currentDate = localDate.Year.ToString() + '-' + localDate.Month.ToString() + '-' + localDate.Day.ToString();
+                TimeSlot timeslot = new TimeSlot(j, currentDate);
 
-                foreach(Pamoka pamoka in allLessons) {
-                    Console.WriteLine(localDate.ToString("dd/MM/yyyy")+"    "+pamoka.dateInFormat.ToShortDateString());
-                    if(localDate.ToString("dd/MM/yyyy")==pamoka.dateInFormat.ToShortDateString()){
-                        if(pamoka.time==j){
-                        timeslot.info = pamoka.instrument+" "+pamoka.type;
-                        timeslot.id = pamoka.id;
-                        break;
+                foreach (Pamoka pamoka in allLessons)
+                {
+
+                    if (localDate.ToString("dd/MM/yyyy") == pamoka.dateInFormat.ToShortDateString())
+                    {
+                        if (pamoka.time == j)
+                        {
+                            timeslot.info = pamoka.instrument + " " + pamoka.type;
+                            timeslot.id = pamoka.id;
+                            break;
                         }
                     }
                 }
                 dayslot.AddTimeSlot(timeslot);
-                
-                
-                
-                
-
-
 
             }
-            
+
             localDate = localDate.AddDays(1);
             week.AddDaySlot(dayslot);
-            
+
         }
-            dataLoaded = true;
+        dataLoaded = true;
+    }
+    void LoadNextWeek() {
+        currentViewingWeek = currentViewingWeek.AddDays(7);
+        LoadWeek();
+    }
+    void LoadPreviousWeek() {
+        currentViewingWeek = currentViewingWeek.AddDays(-7);
+        LoadWeek();
+    }
+
+
+    void LoadWeek(){
+        week = new Week();
+        StateHasChanged();
+        dataLoaded = false;
+        StateHasChanged();
+        _displaydate = currentViewingWeek.ToString("U");
+        localDate = currentViewingWeek;
+
+
+        monthName = DateTime.Now.Month.ToString();
+        year = DateTime.Now.Year.ToString();
+
+        while (localDate.DayOfWeek.ToString() != "Monday")
+        {
+
+            localDate = localDate.AddDays(-1);
+        }
+        
+        for (int i = 0; i < 7; i++)
+        {
+            DaySlot dayslot = new DaySlot();
+            for (int j = 8; j < 18; j++)
+            {
+                string currentDate = localDate.Year.ToString() + '-' + localDate.Month.ToString() + '-' + localDate.Day.ToString();
+                TimeSlot timeslot = new TimeSlot(j, currentDate);
+
+                foreach (Pamoka pamoka in allLessons)
+                {
+
+                    if (localDate.ToString("dd/MM/yyyy") == pamoka.dateInFormat.ToShortDateString())
+                    {
+                        if (pamoka.time == j)
+                        {
+                            timeslot.info = pamoka.instrument + " " + pamoka.type;
+                            timeslot.id = pamoka.id;
+                            break;
+                        }
+                    }
+                }
+                dayslot.AddTimeSlot(timeslot);
+
+            }
+
+            localDate = localDate.AddDays(1);
+            week.AddDaySlot(dayslot);
+
+        }
+        dataLoaded = true;
+        StateHasChanged();
+
+    }
+
+    string GetDaysInterval(){
+        return currentViewingWeek.Day+" - " + currentViewingWeek.AddDays(7).Day;
+
+    }
+
+    string GetYearInterval(){
+        return currentViewingWeek.Year.ToString();
+
+    }
+
+    string GetMonthInterval(){
+        return currentViewingWeek.Month.ToString();
+
+    }
+
+    public async Task GetSessionUser(){
+
+        user = await _currentSession.GetItemAsync<UserSession>("SessionUser");
+        
     }
 
 
     async Task ReadDbData()
     {
-        
+
 
         // check if user exists in database
         string sql = "select * from pamokos";
         // this thing should be a function somewhere
         string connstring = _config.GetConnectionString("default");
-            using (IDbConnection connection = new MySqlConnection(connstring))
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Pamoka>(sql);
+            rows = rows.ToList();
+
+            foreach (var row in rows)
             {
-                var rows = await connection.QueryAsync<Pamoka>(sql);
-                rows = rows.ToList();
-                
-                foreach(var row in rows){
-                    Pamoka pamoka = row;
-                    //Console.WriteLine("Data");
-                    //Console.WriteLine(pamoka.date);
-                    //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
-                    string dataInString = pamoka.date.Split(' ')[0];
-                    pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
-                    allLessons.Add(pamoka);
-                    //Console.WriteLine(allLessons.Count);
-                    
+                Pamoka pamoka = row;
+                //Console.WriteLine("Data");
+                //Console.WriteLine(pamoka.date);
+                //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
+                string dataInString = pamoka.date.Split(' ')[0];
+                pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
+                allLessons.Add(pamoka);
+                //Console.WriteLine(allLessons.Count);
 
-                }
-                
-                
 
-                
             }
-        
-  
+
+
+
+
+        }
+
+
 
     }
-        
-      
 
 
 
-   
+
+
+
 }
 }
 
