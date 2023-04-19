@@ -51,7 +51,7 @@ Slaptažodis
         {
             var rows = await connection.QueryAsync<Naudotojas>(sql, new { elPastas = model.elPastas, slaptazodis = model.slaptazodis });
             rows = rows.ToList();
-            
+
             if (rows.Count() < 1)       // if no users were found gives an alert
             {
                 await js.InvokeVoidAsync("alert", "Neteisingi prisijungimo duomenys");
@@ -60,7 +60,7 @@ Slaptažodis
             }
             naudotojas = rows.First(); 
         }
-        
+
         // update the session
         var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
         await customAuthStateProvider.UpdateAuthenticationState(new UserSession
@@ -68,6 +68,7 @@ Slaptažodis
             Name = naudotojas.vardas,
             Role = naudotojas.role
         });
+        SetSessionUser(naudotojas);
 
         // redirect
         switch(naudotojas.role)
@@ -79,10 +80,18 @@ Slaptažodis
                 navManager.NavigateTo("/", true);
                 break;
         }
-
-
     }
 
+    public void SetSessionUser(Naudotojas naudotojas)
+    {
+        var user = new UserAccount();
+        user.Id = naudotojas.id;
+        user.UserName = naudotojas.vardas;
+        user.Password = naudotojas.slaptazodis;
+        user.Role = naudotojas.role;
+
+        _currentSession.SetItemAsync("SessionUser", user);
+    }
 }
 
 

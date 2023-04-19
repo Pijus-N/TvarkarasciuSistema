@@ -1,9 +1,38 @@
 ﻿@page "/"
+@using BlazorServer.Authentication
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
 
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, world!</h1>
 
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else {
+<p><i>Rolė: @user.Role</i></p>
+}
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+@code
+{
+    public UserAccount user = new UserAccount();
+
+    public async Task GetSessionUser()
+    {
+        user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetSessionUser(); 
+
+            StateHasChanged();
+        }
+    }
+}
