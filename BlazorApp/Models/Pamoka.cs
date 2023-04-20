@@ -4,6 +4,8 @@ namespace BlazorServer.Models
     public class Pamoka
     {
         public int id { get; set; }
+        public int teacher_id { get; set; }
+        public string place { get; set; }
         [Required]
         [StringLength(20, ErrorMessage = "Per ilga pavardė.")]
         public string instrument { get; set; }

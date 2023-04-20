@@ -21,6 +21,10 @@
         <InputText disabled="true" @bind-Value="model.date" class="form-control" />
     </div>
     <div class="form-group">
+        <label>Vieta</label>
+        <InputText @bind-Value="model.place" class="form-control" />
+    </div>
+    <div class="form-group">
         <label>Instrumentas</label>
         <InputText @bind-Value="model.instrument" class="form-control" />
     </div>
@@ -57,6 +61,9 @@
     public string lessonDate{ get; set; }
     public string time{ get; set; }
     bool loading = false;
+    public UserAccount user = new UserAccount();
+
+
 
     private Pamoka model = new Pamoka();
 
@@ -66,8 +73,10 @@
     {
         loading = true;     // silly button effect to show that something is happening
 
-        string sql = "INSERT INTO pamokos (date,time, price, instrument, students_count, type) VALUES('"
+        string sql = "INSERT INTO pamokos (teacher_id,date,place,time, price, instrument, students_count, type) VALUES('"
+        + user.Id + "','"
         + lessonDate + "','"
+        + model.place + "','"
         + time + "','"
         + model.price + "','"
         + model.instrument + "','"
@@ -83,7 +92,7 @@
 
         loading = false;
         await js.InvokeVoidAsync("alert", "Pamoka pridėta");
-        navManager.NavigateTo("/counter", true);
+        navManager.NavigateTo("/counter/show", true);
     }
     protected override void OnParametersSet()
 {
@@ -100,10 +109,17 @@
 
     protected override void OnInitialized()
         {
+            GetSessionUser();
             string[] allChars = myvalue.Split('-');
             lessonDate = allChars[0]+'-'+allChars[1]+'-'+allChars[2];
             time =allChars[3];
             model.date = lessonDate +' '+ time+ ":00";
         }
+        public async Task GetSessionUser()
+    {
+
+        user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+
+    }
 
 }

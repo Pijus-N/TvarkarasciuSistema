@@ -18,7 +18,8 @@
     <ul>
         <li @onclick="@(() => LoadPreviousWeek())" class="prev">&#10094;</li>
         <li @onclick="@(() => LoadNextWeek())" class="next">&#10095;</li>
-        <li><span style="font-size:18px">@GetYearInterval()</span><br>@GetMonthInterval()<br><span style="font-size:14px">@GetDaysInterval()</span></li>
+        <li><span style="font-size:18px">@GetYearInterval()</span><br>@GetMonthInterval()<br><span
+                style="font-size:14px">@GetDaysInterval()</span></li>
     </ul>
 </div>
 
@@ -44,7 +45,7 @@
                 <tr>
                     @for (int j = 0; j < 6; j++)
                     {
-                        if (true)
+                        if (@user.Role == "mokytojas")
                         {
                             if (@week.daySlots[j].timesList[i].info != null)
                             {
@@ -59,6 +60,22 @@
                                 </td>
 
                             }
+                        }
+                        else
+                        {
+                            if (@week.daySlots[j].timesList[i].info != null)
+                            {
+                                <td><a
+                                        href="register/@week.daySlots[j].timesList[i].id.ToString()">@week.daySlots[j].timesList[i].ToString()</a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td><a href="">@week.daySlots[j].timesList[i].ToString()</a>
+                                </td>
+
+                            }
+
                         }
                     }
                 </tr>
@@ -83,10 +100,10 @@
     private List<Pamoka> allLessons = new List<Pamoka>();
     private bool dataLoaded = false;
 
-    public UserSession user = new UserSession();
+    public UserAccount user = new UserAccount();
     public List<Naudotojas> person;
 
-    DateTime currentViewingWeek{ get; set; }
+    DateTime currentViewingWeek { get; set; }
     public class TimeSlot
     {
         public int time;
@@ -168,8 +185,16 @@
     {
 
         await ReadDbData();
-        await GetSessionUser();
-        //Console.WriteLine(user.Role);
+        try
+        {
+            await GetSessionUser();
+        }
+        catch 
+        {
+            // Ignore
+        }
+        
+        Console.WriteLine(user.Id);
         _displaydate = DateTime.Now.ToString("U");
         localDate = DateTime.Now;
         string temp = DateTime.Now.Month.ToString();
@@ -214,17 +239,20 @@
         }
         dataLoaded = true;
     }
-    void LoadNextWeek() {
+    void LoadNextWeek()
+    {
         currentViewingWeek = currentViewingWeek.AddDays(7);
         LoadWeek();
     }
-    void LoadPreviousWeek() {
+    void LoadPreviousWeek()
+    {
         currentViewingWeek = currentViewingWeek.AddDays(-7);
         LoadWeek();
     }
 
 
-    void LoadWeek(){
+    void LoadWeek()
+    {
         week = new Week();
         StateHasChanged();
         dataLoaded = false;
@@ -241,7 +269,7 @@
 
             localDate = localDate.AddDays(-1);
         }
-        
+
         for (int i = 0; i < 7; i++)
         {
             DaySlot dayslot = new DaySlot();
@@ -276,25 +304,38 @@
 
     }
 
-    string GetDaysInterval(){
-        return currentViewingWeek.Day+" - " + currentViewingWeek.AddDays(7).Day;
+    string GetDaysInterval()
+    {
+        return currentViewingWeek.Day + " - " + currentViewingWeek.AddDays(7).Day;
 
     }
 
-    string GetYearInterval(){
+    string GetYearInterval()
+    {
         return currentViewingWeek.Year.ToString();
 
     }
 
-    string GetMonthInterval(){
+    string GetMonthInterval()
+    {
         return currentViewingWeek.Month.ToString();
 
     }
 
-    public async Task GetSessionUser(){
+    public async Task GetSessionUser()
+    {
 
-        user = await _currentSession.GetItemAsync<UserSession>("SessionUser");
         
+
+        try
+        {
+            user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        }
+        catch (JSDisconnectedException ex)
+        {
+            // Ignore
+        }
+
     }
 
 
