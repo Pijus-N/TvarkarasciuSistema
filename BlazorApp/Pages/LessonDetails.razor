@@ -1,0 +1,143 @@
+﻿@page "/details/{myvalue}"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+<PageTitle>Pamokos informacija</PageTitle>
+<h1>Pamokos informacija</h1>
+@if (dataLoaded)
+{
+    string date = model.dateInFormat.ToShortDateString();
+    <EditForm Model="@model">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label>Data</label>
+            <InputText disabled="true" @bind-Value="date" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Vieta</label>
+            <InputText disabled="true" @bind-Value="model.place" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Instrumentas</label>
+            <InputText disabled="true" @bind-Value="model.instrument" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Kaina</label>
+            <InputText disabled="true" @bind-Value="model.price" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Mokiniu skaičius</label>
+            <InputText disabled="true" @bind-Value="model.students_count" class="form-control" />
+        </div>
+        <div>
+            <label>Pamokos tipas</label>
+            <InputText disabled="true" @bind-Value="model.type" class="form-control" />
+        </div><br>
+        <button disabled="@loading" class="btn btn-primary" type="button" @onclick="Register">
+            @if (loading)
+            {
+                <span class="spinner-border spinner-border-sm mr-1"></span>
+            }
+            Registruotis
+        </button>
+        <button disabled="@loading" class="btn btn-danger" type="button" @onclick="UnRegister">
+            @if (loading)
+            {
+                <span class="spinner-border spinner-border-sm mr-1"></span>
+            }
+            Atšaukti registraciją
+        </button>
+    </EditForm>
+
+}
+else
+{
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public string myvalue { get; set; }
+    public string lessonDate { get; set; }
+    public string time { get; set; }
+    bool loading = false;
+
+    bool dataLoaded = false;
+
+    private Pamoka model = new Pamoka();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+
+        //the param will be set now
+        var test = myvalue;
+
+        await ReadDbData(myvalue);
+    }
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private async Task Register()
+    {
+
+    }
+
+    private async Task UnRegister()
+    {
+        
+    }
+
+    async Task ReadDbData(string id)
+    {
+
+
+        // check if user exists in database
+        string sql = "select * from pamokos where id=@id";
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Pamoka>(sql, new { id });
+            rows = rows.ToList();
+
+            foreach (var row in rows)
+            {
+                Pamoka pamoka = row;
+
+                string dataInString = pamoka.date.Split(' ')[0];
+                pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
+
+                model = pamoka;
+
+            }
+
+
+
+
+        }
+
+        dataLoaded = true;
+
+    }
+
+}
