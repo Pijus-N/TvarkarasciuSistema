@@ -646,19 +646,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Pijus\\.nuget\\packages\\": {}
+    "C:\\Users\\ME\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Failai\\TvarkarasciuSistema\\BlazorApp\\BlazorApp.csproj",
+      "projectUniqueName": "C:\\Users\\ME\\Documents\\GitHub\\TvarkarasciuSistema\\BlazorApp\\BlazorApp.csproj",
       "projectName": "BlazorApp",
-      "projectPath": "D:\\Failai\\TvarkarasciuSistema\\BlazorApp\\BlazorApp.csproj",
-      "packagesPath": "C:\\Users\\Pijus\\.nuget\\packages\\",
-      "outputPath": "D:\\Failai\\TvarkarasciuSistema\\BlazorApp\\obj\\",
+      "projectPath": "C:\\Users\\ME\\Documents\\GitHub\\TvarkarasciuSistema\\BlazorApp\\BlazorApp.csproj",
+      "packagesPath": "C:\\Users\\ME\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\ME\\Documents\\GitHub\\TvarkarasciuSistema\\BlazorApp\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Pijus\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ME\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -716,7 +721,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }

@@ -9,65 +9,73 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = BlazorApp
 build_property.RootNamespace = BlazorApp
-build_property.ProjectDir = D:\Failai\TvarkarasciuSistema\BlazorApp\
+build_property.ProjectDir = C:\Users\ME\Documents\GitHub\TvarkarasciuSistema\BlazorApp\
 build_property.RazorLangVersion = 6.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\Failai\TvarkarasciuSistema\BlazorApp
+build_property.MSBuildProjectDirectory = C:\Users\ME\Documents\GitHub\TvarkarasciuSistema\BlazorApp
 build_property._RazorSourceGeneratorDebug = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/App.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/AddNewLesson.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/AddNewLesson.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkTmV3TGVzc29uLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/Counter.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/EditNewLesson.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/EditNewLesson.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdE5ld0xlc3Nvbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/FetchData.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/FetchData.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRmV0Y2hEYXRhLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/Index.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/Prisijungti.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/LessonDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTGVzc29uRGV0YWlscy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/Prisijungti.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpc2lqdW5ndGkucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/Registruotis.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/RegisterLesson.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0ZXJMZXNzb24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/Registruotis.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0cnVvdGlzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Shared/SurveyPrompt.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Shared/SurveyPrompt.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/_Imports.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Shared/MainLayout.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-3dsd3z3yec
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Shared/NavMenu.razor]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Shared/NavMenu.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-7cxxmz0cwl
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/Error.cshtml]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Failai/TvarkarasciuSistema/BlazorApp/Pages/_Host.cshtml]
+[C:/Users/ME/Documents/GitHub/TvarkarasciuSistema/BlazorApp/Pages/_Host.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0hvc3QuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

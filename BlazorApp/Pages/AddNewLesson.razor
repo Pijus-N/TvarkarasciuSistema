@@ -95,12 +95,10 @@
         navManager.NavigateTo("/counter/show", true);
     }
     protected override void OnParametersSet()
-{
-    //the param will be set now
-    var test = myvalue;
-
-
-}
+    {
+        //the param will be set now
+        var test = myvalue;
+    }
 
     private async Task InvalidSubmit()
     {
@@ -108,14 +106,15 @@
     }
 
     protected override void OnInitialized()
-        {
-            GetSessionUser();
-            string[] allChars = myvalue.Split('-');
-            lessonDate = allChars[0]+'-'+allChars[1]+'-'+allChars[2];
-            time =allChars[3];
-            model.date = lessonDate +' '+ time+ ":00";
-        }
-        public async Task GetSessionUser()
+    {
+        GetSessionUser();
+        string[] allChars = myvalue.Split('-');
+        lessonDate = allChars[0] + '-' + allChars[1] + '-' + allChars[2];
+        time = allChars[3];
+        model.date = lessonDate + ' ' + time + ":00";
+    }
+
+    public async Task GetSessionUser()
     {
 
         user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");

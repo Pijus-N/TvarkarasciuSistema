@@ -45,33 +45,34 @@
                 <tr>
                     @for (int j = 0; j < 6; j++)
                     {
+                        var day = week.daySlots[j].timesList[i];
                         if (@user.Role == "mokytojas")
                         {
-                            if (@week.daySlots[j].timesList[i].info != null)
+                            if (@day.info != null)
                             {
-                                <td><a
-                                        href="editlesson/@week.daySlots[j].timesList[i].id.ToString()">@week.daySlots[j].timesList[i].ToString()</a>
+                                <td><a href="editlesson/@day.id.ToString()">@day.ToString()</a>
                                 </td>
                             }
                             else
                             {
-                                <td><a
-                                        href="addnewlesson/@week.daySlots[j].timesList[i].FullToString()">@week.daySlots[j].timesList[i].ToString()</a>
+                                <td>
+                                    <a href="addnewlesson/@day.FullToString()">@day.ToString()</a>
                                 </td>
 
                             }
                         }
                         else
                         {
-                            if (@week.daySlots[j].timesList[i].info != null)
+                            if (@day.info != null)
                             {
-                                <td><a
-                                        href="register/@week.daySlots[j].timesList[i].id.ToString()">@week.daySlots[j].timesList[i].ToString()</a>
+                                <td>
+                                    <a href="details/@day.id.ToString()">@day.ToString()</a>
                                 </td>
                             }
                             else
                             {
-                                <td><a href="">@week.daySlots[j].timesList[i].ToString()</a>
+                                <td>
+                                    <a style="color: red" href="">@day.ToString()</a>
                                 </td>
 
                             }
@@ -134,7 +135,7 @@
         }
         public string FullToString()
         {
-            return fullDate + '-' + time.ToString();
+            return fullDate + ' ' + time.ToString();
         }
 
 
@@ -193,7 +194,7 @@
         {
             // Ignore
         }
-        
+
         Console.WriteLine(user.Id);
         _displaydate = DateTime.Now.ToString("U");
         localDate = DateTime.Now;
@@ -213,13 +214,13 @@
             DaySlot dayslot = new DaySlot();
             for (int j = 8; j < 18; j++)
             {
-                string currentDate = localDate.Year.ToString() + '-' + localDate.Month.ToString() + '-' + localDate.Day.ToString();
+                string currentDate = localDate.ToShortDateString();
                 TimeSlot timeslot = new TimeSlot(j, currentDate);
 
                 foreach (Pamoka pamoka in allLessons)
                 {
 
-                    if (localDate.ToString("dd/MM/yyyy") == pamoka.dateInFormat.ToShortDateString())
+                    if (localDate.Date == pamoka.dateInFormat)
                     {
                         if (pamoka.time == j)
                         {
@@ -275,13 +276,13 @@
             DaySlot dayslot = new DaySlot();
             for (int j = 8; j < 18; j++)
             {
-                string currentDate = localDate.Year.ToString() + '-' + localDate.Month.ToString() + '-' + localDate.Day.ToString();
+                string currentDate = localDate.ToShortDateString();
                 TimeSlot timeslot = new TimeSlot(j, currentDate);
 
                 foreach (Pamoka pamoka in allLessons)
                 {
 
-                    if (localDate.ToString("dd/MM/yyyy") == pamoka.dateInFormat.ToShortDateString())
+                    if (localDate.Date == pamoka.dateInFormat)
                     {
                         if (pamoka.time == j)
                         {
@@ -358,8 +359,8 @@
                 //Console.WriteLine("Data");
                 //Console.WriteLine(pamoka.date);
                 //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
-                string dataInString = pamoka.date.Split(' ')[0];
-                pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
+                string dateInString = pamoka.date.Split(' ')[0];
+                pamoka.dateInFormat = DateTime.ParseExact(dateInString, "MM/dd/yyyy", null);
                 allLessons.Add(pamoka);
                 //Console.WriteLine(allLessons.Count);
 
@@ -375,12 +376,6 @@
 
     }
 
-
-
-
-
-
-}
 }
 
 
