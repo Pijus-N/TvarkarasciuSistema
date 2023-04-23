@@ -220,11 +220,11 @@
                 foreach (Pamoka pamoka in allLessons)
                 {
 
-                    if (localDate.Date == pamoka.dateInFormat)
+                    if (localDate.Date == pamoka.pamokos_pradzia.Date)
                     {
-                        if (pamoka.time == j)
+                        if (pamoka.pamokos_pradzia.Hour == j)
                         {
-                            timeslot.info = pamoka.instrument + " " + pamoka.type;
+                            timeslot.info = pamoka.instrumentas + " " + pamoka.pamokos_tipas;
                             timeslot.id = pamoka.id;
                             break;
                         }
@@ -282,11 +282,11 @@
                 foreach (Pamoka pamoka in allLessons)
                 {
 
-                    if (localDate.Date == pamoka.dateInFormat)
+                    if (localDate.Date == pamoka.pamokos_pradzia.Date)
                     {
-                        if (pamoka.time == j)
+                        if (pamoka.pamokos_pradzia.Hour == j)
                         {
-                            timeslot.info = pamoka.instrument + " " + pamoka.type;
+                            timeslot.info = pamoka.instrumentas + " " + pamoka.pamokos_tipas;
                             timeslot.id = pamoka.id;
                             break;
                         }
@@ -359,8 +359,6 @@
                 //Console.WriteLine("Data");
                 //Console.WriteLine(pamoka.date);
                 //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
-                string dateInString = pamoka.date.Split(' ')[0];
-                pamoka.dateInFormat = DateTime.ParseExact(dateInString, "MM/dd/yyyy", null);
                 allLessons.Add(pamoka);
                 //Console.WriteLine(allLessons.Count);
 

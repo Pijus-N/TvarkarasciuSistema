@@ -19,27 +19,27 @@
     <ValidationSummary/>
     <div class="form-group">
         <label>Data</label>
-        <InputText disabled="true" @bind-Value="model.date" class="form-control" />
+        <InputText disabled="true" @bind-Value="model.instrumentas" class="form-control" />
     </div>
      <div class="form-group">
         <label>Vieta</label>
-        <InputText @bind-Value="model.place" class="form-control" />
+        <InputText @bind-Value="model.vietove" class="form-control" />
     </div>
     <div class="form-group">
         <label>Instrumentas</label>
-        <InputText @bind-Value="model.instrument" class="form-control" />
+        <InputText @bind-Value="model.instrumentas" class="form-control" />
     </div>
     <div class="form-group">
         <label>Kaina</label>
-        <InputText @bind-Value="model.price" class="form-control" />
+        <InputText @bind-Value="model.kaina" class="form-control" />
     </div>
     <div class="form-group">
         <label>Mokiniu skaičius</label>
-        <InputText @bind-Value="model.students_count" class="form-control" />
+        <InputText @bind-Value="model.mokiniu_skaicius" class="form-control" />
     </div>
     <div>
         <label>Pamokos tipas</label>
-        <InputSelect @bind-Value="model.type" class="form-select" required="required">
+        <InputSelect @bind-Value="model.pamokos_tipas" class="form-select" required="required">
             <option value="">Pasirinkite pamokos tipą</option>
             <option value="Gyva">Gyva</option>
             <option value="Nuotolinė">Nuotolinė</option>
@@ -90,11 +90,11 @@
     {
         loading = true;     // silly button effect to show that something is happening
 
-       string sql = "UPDATE pamokos SET time = @time,place = @place, price = @price ,instrument = @instrument, students_count = @students_count, type = @type WHERE id = @id";
+       string sql = "UPDATE pamokos SET time = @time,place = @place, price = @price ,instrument = @instrument, students_count = @students_count, type = @type WHERE id = @id"; //BROKEN
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            await connection.ExecuteAsync(sql, new { time = model.time,place=model.place, price = model.price, instrument = model.instrument, students_count = model.students_count,type=model.type, id=@myvalue });
+            //await connection.ExecuteAsync(sql, new { time = model.time,place=model.place, price = model.price, instrument = model.instrument, students_count = model.students_count,type=model.type, id=@myvalue });
         }
 
         loading = false;
@@ -145,8 +145,7 @@
                     //Console.WriteLine("Data");
                     //Console.WriteLine(pamoka.date);
                     //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
-                    string dataInString = pamoka.date.Split(' ')[0];
-                    pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
+
                     //allLessons.Add(pamoka);
 
                     editableLesson = pamoka;
