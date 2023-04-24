@@ -4,7 +4,6 @@ using BlazorApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using BlazorServer.Authentication;
 using Blazored.SessionStorage;
-//using DataAccessLibrary;
 
 Console.WriteLine(args);
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +14,6 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddBlazoredSessionStorage();
-//builder.Services.AddSingleton<ISQLDataAccess, SQLDataAccess>();
 
 var app = builder.Build();
 

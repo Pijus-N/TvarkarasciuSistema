@@ -45,21 +45,25 @@ Slaptažodis
 
         // check if user exists in database
         string sql = "select * from naudotojai where elPastas = @elPastas AND slaptazodis = @slaptazodis limit 1";
-        // this thing should be a function somewhere
+
+        List<Naudotojas> rastiNaudotojai;
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            var rows = await connection.QueryAsync<Naudotojas>(sql, new { elPastas = model.elPastas, slaptazodis = model.slaptazodis });
-            rows = rows.ToList();
-
-            if (rows.Count() < 1)       // if no users were found gives an alert
-            {
-                await js.InvokeVoidAsync("alert", "Neteisingi prisijungimo duomenys");
-                loading = false;
-                return;
-            }
-            naudotojas = rows.First(); 
+            var rows = await connection.QueryAsync<Naudotojas>(sql, new { 
+                @elPastas = model.elPastas, 
+                @slaptazodis = model.slaptazodis 
+            });
+            rastiNaudotojai = rows.ToList();
         }
+
+        if (rastiNaudotojai.Count() < 1)       // if no users were found gives an alert
+        {
+            await js.InvokeVoidAsync("alert", "Neteisingi prisijungimo duomenys");
+            loading = false;
+            return;
+        }
+        naudotojas = rastiNaudotojai.First();
 
         // update the session
         var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;

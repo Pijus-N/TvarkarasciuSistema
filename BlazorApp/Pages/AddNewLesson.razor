@@ -9,8 +9,6 @@
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authStateProvider
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
-@using DataAccessLibrary
-@inject ISQLDataAccess _data
 
  
 <PageTitle>Pamokos sukūrimas</PageTitle>
@@ -85,7 +83,7 @@ else {
         loading = true;     // silly button effect to show that something is happening
 
         string sql = "INSERT INTO pamokos (mokytojo_id, pamokos_pradzia, vietove, pamokos_trukme, kaina, instrumentas, mokiniu_skaicius, pamokos_tipas) VALUES('" 
-        + 1 + "','"
+        + 1 + "','" // kol kas cia visada mokytojo id bus 1
         + model.pamokos_pradzia + "','"
         + model.vietove + "','"
         + model.pamokos_trukme + "','"
@@ -95,7 +93,10 @@ else {
         + model.pamokos_tipas + "');";
 
         string connstring = _config.GetConnectionString("default");         // the "default" connection string is located in appsettings.json
-        await _data.SaveData(sql, new { }, _config.GetConnectionString("default"));
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { });
+        }
 
         loading = false;
         await js.InvokeVoidAsync("alert", "Pamoka pridėta");
@@ -123,9 +124,7 @@ else {
 
     public async Task GetSessionUser()
     {
-
         user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
-
     }
 
 }

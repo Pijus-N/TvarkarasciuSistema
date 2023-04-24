@@ -9,8 +9,6 @@
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authStateProvider
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
-@using DataAccessLibrary
-@inject ISQLDataAccess _data
  
 <PageTitle>Pamokos redagavimas</PageTitle>
 <h1>Pamokos redagavimas</h1>
@@ -90,11 +88,18 @@ else
     {
         loading = true;     // silly button effect to show that something is happening
 
-       string sql = "UPDATE pamokos SET pamokos_pradzia = @pamokos_pradzia, vietove = @vietove, kaina = @kaina, instrumentas = @instrumentas, mokiniu_skaicius = @mokiniu_skaicius, pamokos_tipas = @pamokos_tipas WHERE id = @id";
+        string sql = "UPDATE pamokos SET pamokos_pradzia = @pamokos_pradzia, vietove = @vietove, kaina = @kaina, instrumentas = @instrumentas, mokiniu_skaicius = @mokiniu_skaicius, pamokos_tipas = @pamokos_tipas WHERE id = @id";
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            await connection.ExecuteAsync(sql, new { pamokos_pradzia = model.pamokos_pradzia, vietove = model.vietove, kaina = model.kaina, instrumentas = model.instrumentas, mokiniu_skaicius = model.mokiniu_skaicius, pamokos_tipas = model.pamokos_tipas, id = @myvalue });
+            await connection.ExecuteAsync(sql, new { 
+                pamokos_pradzia = model.pamokos_pradzia, 
+                vietove = model.vietove, 
+                kaina = model.kaina, 
+                instrumentas = model.instrumentas, 
+                mokiniu_skaicius = model.mokiniu_skaicius, 
+                pamokos_tipas = model.pamokos_tipas, 
+                id = @myvalue });
         }
 
         loading = false;
@@ -102,64 +107,52 @@ else
         navManager.NavigateTo("/counter/show", true);
     }
     protected override async Task OnParametersSetAsync()
-{
-    await base.OnParametersSetAsync();
+    {
+        await base.OnParametersSetAsync();
 
+        //the param will be set now
+        var test = myvalue;
 
-    //the param will be set now
-    var test = myvalue;
-
-    await ReadDbData(myvalue);
-}
+        await ReadDbData(myvalue);
+    }
 
     private async Task InvalidSubmit()
     {
         await js.InvokeVoidAsync("alert", "Neteisingi duomenys!");
     }
 
-  
-
-   protected override void OnInitialized()
-        {
-           // Console.WriteLine(myvalue);
-           //await ReadDbData();
-          
-        }
-
-        async Task ReadDbData(string id)
+    protected override void OnInitialized()
     {
-        
+        // Console.WriteLine(myvalue);
+        //await ReadDbData();          
+    }
 
+    async Task ReadDbData(string id)
+    {      
         // check if user exists in database
         string sql = "select * from pamokos where id=@id";
         
         // this thing should be a function somewhere
         string connstring = _config.GetConnectionString("default");
-            using (IDbConnection connection = new MySqlConnection(connstring))
-            {
-                var rows = await connection.QueryAsync<Pamoka>(sql,new { id });
-                rows = rows.ToList();
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Pamoka>(sql,new { id });
+            rows = rows.ToList();
                 
-                foreach(var row in rows){
-                    Pamoka pamoka = row;
-                    //Console.WriteLine("Data");
-                    //Console.WriteLine(pamoka.date);
-                    //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
+            foreach(var row in rows){
+                Pamoka pamoka = row;
+                //Console.WriteLine("Data");
+                //Console.WriteLine(pamoka.date);
+                //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
 
-                    //allLessons.Add(pamoka);
+                //allLessons.Add(pamoka);
 
-                    editableLesson = pamoka;
-                    model=pamoka;
+                editableLesson = pamoka;
+                model=pamoka;
 
-                }
-                
-                
-
-                
-            }
-        
+            }                             
+        }        
         dataLoaded = true;
-
     }
 
     private async Task DeleteLesson()
