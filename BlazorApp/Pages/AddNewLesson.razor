@@ -9,15 +9,27 @@
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authStateProvider
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
+@using DataAccessLibrary
+@inject ISQLDataAccess _data
+
  
 <PageTitle>Pamokos sukūrimas</PageTitle>
 <h1>Pamokos sukūrimas</h1>
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else {
+<p><i>Rolė: @user.Id</i></p>
+}
+
 <EditForm Model="@model" OnValidSubmit="@AddNewLessons" OnInvalidSubmit="@InvalidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary/>
     <div class="form-group">
         <label>Data</label>
-        <InputText disabled="true" @bind-Value="model.instrumentas" class="form-control" />
+        <InputDate disabled="true" @bind-Value="model.pamokos_pradzia" class="form-control" />
+        <!-- reiketu veliau dar idet valandu picker -->
     </div>
     <div class="form-group">
         <label>Vieta</label>
@@ -29,11 +41,11 @@
     </div>
     <div class="form-group">
         <label>Kaina</label>
-        <InputText @bind-Value="model.kaina" class="form-control" />
+        <InputNumber @bind-Value="model.kaina" class="form-control" />
     </div>
     <div class="form-group">
         <label>Mokiniu skaičius</label>
-        <InputText @bind-Value="model.mokiniu_skaicius" class="form-control" />
+        <InputNumber @bind-Value="model.mokiniu_skaicius" class="form-control" />
     </div>
     <div>
         <label>Pamokos tipas</label>
@@ -72,22 +84,18 @@
     {
         loading = true;     // silly button effect to show that something is happening
 
-        string sql = "INSERT INTO pamokos (teacher_id,date,place,time, price, instrument, students_count, type) VALUES('" //BROKEN
-        + user.Id + "','"
-        + lessonDate + "','"
+        string sql = "INSERT INTO pamokos (mokytojo_id, pamokos_pradzia, vietove, pamokos_trukme, kaina, instrumentas, mokiniu_skaicius, pamokos_tipas) VALUES('" 
+        + 1 + "','"
+        + model.pamokos_pradzia + "','"
         + model.vietove + "','"
-        + time + "','"
+        + model.pamokos_trukme + "','"
         + model.kaina + "','"
         + model.instrumentas + "','"
         + model.mokiniu_skaicius + "','"
         + model.pamokos_tipas + "');";
 
-        // this thing should be a function somewhere
         string connstring = _config.GetConnectionString("default");         // the "default" connection string is located in appsettings.json
-        using (IDbConnection connection = new MySqlConnection(connstring))  // connect to db using MySqlConnector
-        {
-            await connection.ExecuteAsync(sql, new { });
-        }
+        await _data.SaveData(sql, new { }, _config.GetConnectionString("default"));
 
         loading = false;
         await js.InvokeVoidAsync("alert", "Pamoka pridėta");

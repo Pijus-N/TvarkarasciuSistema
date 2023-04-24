@@ -11,12 +11,12 @@ namespace BlazorServer.Models
         [Required]
         public int pamokos_trukme { get; set; }
         [Required]
-        public string kaina { get; set; }
+        public double kaina { get; set; }
         [Required]
         [StringLength(20, ErrorMessage = "Per ilga pavardė.")]
         public string instrumentas { get; set; }
         [Required]
-        public string mokiniu_skaicius { get; set; }
+        public int mokiniu_skaicius { get; set; }
         [Required]
         public string pamokos_tipas { get; set; }
 
