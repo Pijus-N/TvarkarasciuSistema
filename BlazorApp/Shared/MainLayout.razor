@@ -14,27 +14,27 @@
         <div class="top-row px-4">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
             <CascadingAuthenticationState>
-                <AuthorizeView Roles="mokytojas, mokinys, globejas, administratorius">
+                <AuthorizeView Roles="teacher, student, guardian, administrator">
                     <Authorized>
-                        <a @onclick="Atsijungti" href="">Atsijungti</a>
+                        <a @onclick="LogOut" href="">Log out</a>
                     </Authorized>
                     <NotAuthorized>
-                        <a href="prisijungti">Prisijungti</a>
-                        <a href="registruotis">Registruotis</a>
+                        <a href="login">Log in</a>
+                        <a href="register">Register</a>
                     </NotAuthorized>
                 </AuthorizeView>
         
-                <AuthorizeView Roles="mokytojas">
-                    <a>Role: mokytojas</a>
+                <AuthorizeView Roles="teacher">
+                    <a>Role: teacher</a>
                 </AuthorizeView>
-                <AuthorizeView Roles="mokinys">
-                    <a>Role: mokinys</a>
+                <AuthorizeView Roles="student">
+                    <a>Role: student</a>
                 </AuthorizeView>
-                <AuthorizeView Roles="globejas">
-                    <a>Role: globejas</a>
+                <AuthorizeView Roles="guardian">
+                    <a>Role: guardian</a>
                 </AuthorizeView>
-                <AuthorizeView Roles="administratorius">
-                    <a>Role: administratorius</a>
+                <AuthorizeView Roles="administrator">
+                    <a>Role: administrator</a>
                 </AuthorizeView>    
             </CascadingAuthenticationState>
         </div>
@@ -46,7 +46,7 @@
 </div>
 
 @code{
-    private async Task Atsijungti()
+    private async Task LogOut()
     {
         var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
         await customAuthStateProvider.UpdateAuthenticationState(null);

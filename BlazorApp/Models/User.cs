@@ -1,23 +1,23 @@
 ﻿using System.ComponentModel.DataAnnotations;
 namespace BlazorServer.Models
 {
-    public class Naudotojas
+    public class User
     {
         public int id { get; set; }
         [Required]
         [StringLength(20, ErrorMessage = "Per ilgas vardas.")]
-        public string vardas { get; set; }
+        public string name { get; set; }
         [Required]
         [StringLength(20, ErrorMessage = "Per ilga pavardė.")]
-        public string pavarde { get; set; }
+        public string lastname { get; set; }
         [Required]
         [StringLength(40, ErrorMessage = "Per ilgas el. paštas.")]
-        public string elPastas { get; set; }
+        public string email { get; set; }
         [Required]
         [StringLength(20, ErrorMessage = "Per ilgas slaptažodis.")]
-        public string slaptazodis { get; set; }
+        public string password { get; set; }
         [Required]
-        public DateTime gimimoData { get; set; }
+        public DateTime birthdate { get; set; }
         public string role { get; set; }
 
     }
