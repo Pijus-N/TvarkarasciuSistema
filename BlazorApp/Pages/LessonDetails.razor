@@ -10,46 +10,46 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
 
-<PageTitle>Pamokos informacija</PageTitle>
-<h1>Pamokos informacija</h1>
+<PageTitle>lessons informacija</PageTitle>
+<h1>lessons informacija</h1>
 @if (dataLoaded)
 {
-    string date = model.pamokos_pradzia.ToShortDateString();
+    string date = model.start_time.ToShortDateString();
     <EditForm Model="@model">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="form-group">
-            <label>Data</label>
+            <label>Date</label>
             <InputText disabled="true" @bind-Value="date" class="form-control" />
         </div>
         <div class="form-group">
-            <label>Vieta</label>
-            <InputText disabled="true" @bind-Value="model.vietove" class="form-control" />
+            <label>Location</label>
+            <InputText disabled="true" @bind-Value="model.location" class="form-control" />
         </div>
         <div class="form-group">
-            <label>Instrumentas</label>
-            <InputText disabled="true" @bind-Value="model.instrumentas" class="form-control" />
+            <label>Instrument</label>
+            <InputText disabled="true" @bind-Value="model.instrument" class="form-control" />
         </div>
         <div class="form-group">
-            <label>Kaina</label>
-            <InputNumber disabled="true" @bind-Value="model.kaina" class="form-control" />
+            <label>Price</label>
+            <InputNumber disabled="true" @bind-Value="model.price" class="form-control" />
         </div>
         <div class="form-group">
-            <label>Mokiniu skaičius</label>
-            <InputNumber disabled="true" @bind-Value="model.mokiniu_skaicius" class="form-control" />
+            <label>Student Count</label>
+            <InputNumber disabled="true" @bind-Value="model.student_count" class="form-control" />
         </div>
         <div>
-            <label>Pamokos tipas</label>
-            <InputText disabled="true" @bind-Value="model.pamokos_tipas" class="form-control" />
+            <label>Lesson Type</label>
+            <InputText disabled="true" @bind-Value="model.lesson_type" class="form-control" />
         </div><br>
-        @if(!regitered)
+        @if(!registered)
         {
             <button disabled="@loading" class="btn btn-primary" type="button" @onclick="Register">
                 @if (loading)
                 {
                     <span class="spinner-border spinner-border-sm mr-1"></span>
                 }
-                Registruotis
+                Register
             </button>
         }
         else
@@ -59,7 +59,7 @@
                 {
                     <span class="spinner-border spinner-border-sm mr-1"></span>
                 }
-                Atšaukti registraciją
+                Cancel Registration
             </button>
         }
     </EditForm>
@@ -79,14 +79,14 @@ else
     public string myvalue { get; set; }
     public string lessonDate { get; set; }
     public string time { get; set; }
-    public int mokinio_id { get; set; }
+    public int student_id { get; set; }
 
     bool loading = false;
 
-    bool regitered = false;
+    bool registered = false;
     bool dataLoaded = false;
 
-    private Pamoka model = new Pamoka();
+    private Lesson model = new Lesson();
 
 
     protected override async Task OnParametersSetAsync()
@@ -113,17 +113,17 @@ else
         {
             connection.Open();
 
-            //use mokinio_id and pamokos_id to add new entry to registracijos
-            string query = "INSERT INTO `registracijos` (`mokinio_id`, `pamokos_id`) VALUES (@mokinys, @pamoka)";
+            //use student_id and lesson_id to add new entry to registrations
+            string query = "INSERT INTO `registrations` (`student_id`, `lesson_id`) VALUES (@student, @lesson)";
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@mokinys", mokinio_id);
-                command.Parameters.AddWithValue("@pamoka", myvalue);
+                command.Parameters.AddWithValue("@student", student_id);
+                command.Parameters.AddWithValue("@lesson", myvalue);
 
                 command.ExecuteNonQuery();
             }
         }
-        navManager.NavigateTo("/response/regitered");
+        navManager.NavigateTo("/response/registered");
     }
 
     private async Task UnRegister()
@@ -134,8 +134,8 @@ else
         {
             connection.Open();
 
-            //use mokinio_id and pamokos_id to find an entry in registracijos and delete it
-            string query = "DELETE FROM `registracijos` WHERE mokinio_id = " + mokinio_id.ToString()+" AND pamokos_id = "+ myvalue;
+            //use student_id and lesson_id to find an entry in registrations and delete it
+            string query = "DELETE FROM `registrations` WHERE student_id = " + student_id.ToString()+" AND lesson_id = "+ myvalue;
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
                 command.ExecuteNonQuery();
@@ -152,37 +152,37 @@ else
         using (MySqlConnection connection = new MySqlConnection(connstring))
         {
             connection.Open();
-            //get mokinio_id using naudotojo_id
-            string query = "SELECT * FROM mokiniai WHERE naudotojo_id = " + user.Id.ToString() + " LIMIT 1";
+            //get student_id using naudotojo_id
+            string query = "SELECT * FROM students WHERE user_id = " + user.Id.ToString() + " LIMIT 1";
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        mokinio_id = reader.GetInt32(0);
+                        student_id = reader.GetInt32(0);
                     }
                 }
             }
 
-            //use mokinio_id and pamokos_id to add new entry to registracijos
-            query = "SELECT * FROM `registracijos` WHERE mokinio_id = " + mokinio_id.ToString() + " AND pamokos_id = " + myvalue;
+            //use student_id and lesson_id to add new entry to registrations
+            query = "SELECT * FROM `registrations` WHERE student_id = " + student_id.ToString() + " AND lesson_id = " + myvalue;
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
-                    regitered = reader.HasRows;
+                    registered = reader.HasRows;
                 }
             }
         }
 
         // check if user exists in database
-        string sql = "select * from pamokos where id=@id limit 1";
+        string sql = "select * from lessons where id=@id limit 1";
 
         // this thing should be a function somewhere
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            var rows = await connection.QueryAsync<Pamoka>(sql, new { id });
+            var rows = await connection.QueryAsync<Lesson>(sql, new { id });
             model = rows.First();
         }
         dataLoaded = true;

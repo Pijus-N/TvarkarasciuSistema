@@ -10,39 +10,39 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
  
-<PageTitle>Pamokos redagavimas</PageTitle>
-<h1>Pamokos redagavimas</h1>
+<PageTitle>Edit Lesson</PageTitle>
+<h1>Edit lesson</h1>
 @if (dataLoaded)
 {
     <EditForm Model="@model" OnValidSubmit="@EditLesson" OnInvalidSubmit="@InvalidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary/>
     <div class="form-group">
-        <label>Data</label>
-        <InputDate disabled="true" @bind-Value="model.pamokos_pradzia" class="form-control" />
+        <label>Date</label>
+        <InputDate disabled="true" @bind-Value="model.start_time" class="form-control" />
     </div>
         <div class="form-group">
-        <label>Vieta</label>
-        <InputText @bind-Value="model.vietove" class="form-control" />
+        <label>Location</label>
+        <InputText @bind-Value="model.location" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Instrumentas</label>
-        <InputText @bind-Value="model.instrumentas" class="form-control" />
+        <label>Instrument</label>
+        <InputText @bind-Value="model.instrument" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Kaina</label>
-        <InputNumber @bind-Value="model.kaina" class="form-control" />
+        <label>Price</label>
+        <InputNumber @bind-Value="model.price" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Mokiniu skaičius</label>
-        <InputNumber @bind-Value="model.mokiniu_skaicius" class="form-control" />
+        <label>Student count</label>
+        <InputNumber @bind-Value="model.student_count" class="form-control" />
     </div>
     <div>
-        <label>Pamokos tipas</label>
-        <InputSelect @bind-Value="model.pamokos_tipas" class="form-select" required="required">
-            <option value="">Pasirinkite pamokos tipą</option>
-            <option value="Gyva">Gyva</option>
-            <option value="Nuotolinė">Nuotolinė</option>
+        <label>Lesson type</label>
+        <InputSelect @bind-Value="model.lesson_type" class="form-select" required="required">
+            <option value="">Select a lesson type</option>
+            <option value="Live">Live</option>
+            <option value="Online">Online</option>
 
         </InputSelect>
     </div><br>
@@ -81,29 +81,29 @@ else
 
     bool dataLoaded = false;
 
-    private Pamoka model = new Pamoka();
-    public Pamoka editableLesson = new Pamoka();
+    private Lesson model = new Lesson();
+    public Lesson editableLesson = new Lesson();
 
     private async Task EditLesson() 
     {
         loading = true;     // silly button effect to show that something is happening
 
-        string sql = "UPDATE pamokos SET pamokos_pradzia = @pamokos_pradzia, vietove = @vietove, kaina = @kaina, instrumentas = @instrumentas, mokiniu_skaicius = @mokiniu_skaicius, pamokos_tipas = @pamokos_tipas WHERE id = @id";
+        string sql = "UPDATE lessons SET start_time = @start_time, location = @location, price = @price, instrument = @instrument, student_count = @student_count, lesson_type = @lesson_type WHERE id = @id";
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
             await connection.ExecuteAsync(sql, new { 
-                pamokos_pradzia = model.pamokos_pradzia, 
-                vietove = model.vietove, 
-                kaina = model.kaina, 
-                instrumentas = model.instrumentas, 
-                mokiniu_skaicius = model.mokiniu_skaicius, 
-                pamokos_tipas = model.pamokos_tipas, 
+                start_time = model.start_time, 
+                location = model.location, 
+                price = model.price, 
+                instrument = model.instrument, 
+                student_count = model.student_count, 
+                lesson_type = model.lesson_type, 
                 id = @myvalue });
         }
 
         loading = false;
-        await js.InvokeVoidAsync("alert", "Pamoka atnaujinta");
+        await js.InvokeVoidAsync("alert", "Lesson updated.");
         navManager.NavigateTo("/counter/show", true);
     }
     protected override async Task OnParametersSetAsync()
@@ -118,7 +118,7 @@ else
 
     private async Task InvalidSubmit()
     {
-        await js.InvokeVoidAsync("alert", "Neteisingi duomenys!");
+        await js.InvokeVoidAsync("alert", "Incorrect data. Please try again.");
     }
 
     protected override void OnInitialized()
@@ -130,25 +130,25 @@ else
     async Task ReadDbData(string id)
     {      
         // check if user exists in database
-        string sql = "select * from pamokos where id=@id";
+        string sql = "select * from lessons where id=@id";
         
         // this thing should be a function somewhere
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            var rows = await connection.QueryAsync<Pamoka>(sql,new { id });
+            var rows = await connection.QueryAsync<Lesson>(sql,new { id });
             rows = rows.ToList();
                 
             foreach(var row in rows){
-                Pamoka pamoka = row;
+                Lesson Lesson = row;
                 //Console.WriteLine("Data");
-                //Console.WriteLine(pamoka.date);
-                //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
+                //Console.WriteLine(Lesson.date);
+                //Console.WriteLine(DateTime.Parse(Lesson.date.Split(' ')[0]));
 
-                //allLessons.Add(pamoka);
+                //allLessons.Add(Lesson);
 
-                editableLesson = pamoka;
-                model=pamoka;
+                editableLesson = Lesson;
+                model=Lesson;
 
             }                             
         }        
@@ -159,7 +159,7 @@ else
 {
     loading = true;
     
-    string sql = "DELETE FROM pamokos WHERE id = @id";
+    string sql = "DELETE FROM lessons WHERE id = @id";
     string connstring = _config.GetConnectionString("default");
     using (IDbConnection connection = new MySqlConnection(connstring))
     {
@@ -167,7 +167,7 @@ else
     }
 
     loading = false;
-    await js.InvokeVoidAsync("alert", "Pamoka ištrinta");
+    await js.InvokeVoidAsync("alert", "Lesson deleted");
     navManager.NavigateTo("/counter", true);
 }
 

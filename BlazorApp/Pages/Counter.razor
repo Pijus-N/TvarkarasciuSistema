@@ -46,7 +46,7 @@
                     @for (int j = 0; j < 6; j++)
                     {
                         var day = week.daySlots[j].timesList[i];
-                        if (@user.Role == "mokytojas")
+                        if (@user.Role == "teacher")
                         {
                             if (@day.info != null)
                             {
@@ -98,11 +98,11 @@
 @code {
     [Parameter]
     public string myvalue { get; set; }
-    private List<Pamoka> allLessons = new List<Pamoka>();
+    private List<Lesson> allLessons = new List<Lesson>();
     private bool dataLoaded = false;
 
     public UserAccount user = new UserAccount();
-    public List<Naudotojas> person;
+    public List<User> person;
 
     DateTime currentViewingWeek { get; set; }
     public class TimeSlot
@@ -217,15 +217,15 @@
                 string currentDate = localDate.ToShortDateString();
                 TimeSlot timeslot = new TimeSlot(j, currentDate);
 
-                foreach (Pamoka pamoka in allLessons)
+                foreach (Lesson Lesson in allLessons)
                 {
 
-                    if (localDate.Date == pamoka.pamokos_pradzia.Date)
+                    if (localDate.Date == Lesson.start_time.Date)
                     {
-                        if (pamoka.pamokos_pradzia.Hour == j)
+                        if (Lesson.start_time.Hour == j)
                         {
-                            timeslot.info = pamoka.instrumentas + " " + pamoka.pamokos_tipas;
-                            timeslot.id = pamoka.id;
+                            timeslot.info = Lesson.instrument + " " + Lesson.lesson_type;
+                            timeslot.id = Lesson.id;
                             break;
                         }
                     }
@@ -279,15 +279,15 @@
                 string currentDate = localDate.ToShortDateString();
                 TimeSlot timeslot = new TimeSlot(j, currentDate);
 
-                foreach (Pamoka pamoka in allLessons)
+                foreach (Lesson Lesson in allLessons)
                 {
 
-                    if (localDate.Date == pamoka.pamokos_pradzia.Date)
+                    if (localDate.Date == Lesson.start_time.Date)
                     {
-                        if (pamoka.pamokos_pradzia.Hour == j)
+                        if (Lesson.start_time.Hour == j)
                         {
-                            timeslot.info = pamoka.instrumentas + " " + pamoka.pamokos_tipas;
-                            timeslot.id = pamoka.id;
+                            timeslot.info = Lesson.instrument + " " + Lesson.lesson_type;
+                            timeslot.id = Lesson.id;
                             break;
                         }
                     }
@@ -345,21 +345,21 @@
 
 
         // check if user exists in database
-        string sql = "select * from pamokos";
+        string sql = "select * from lessons";
         // this thing should be a function somewhere
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            var rows = await connection.QueryAsync<Pamoka>(sql);
+            var rows = await connection.QueryAsync<Lesson>(sql);
             rows = rows.ToList();
 
             foreach (var row in rows)
             {
-                Pamoka pamoka = row;
+                Lesson Lesson = row;
                 //Console.WriteLine("Data");
-                //Console.WriteLine(pamoka.date);
-                //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
-                allLessons.Add(pamoka);
+                //Console.WriteLine(Lesson.date);
+                //Console.WriteLine(DateTime.Parse(Lesson.date.Split(' ')[0]));
+                allLessons.Add(Lesson);
                 //Console.WriteLine(allLessons.Count);
 
 

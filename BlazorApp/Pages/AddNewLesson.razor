@@ -11,46 +11,45 @@
 @inject Blazored.SessionStorage.ISessionStorageService _currentSession
 
  
-<PageTitle>Pamokos sukūrimas</PageTitle>
-<h1>Pamokos sukūrimas</h1>
+<PageTitle>Lesson Creation</PageTitle>
+<h1>Add new lesson</h1>
 @if (user == null)
 {
     <p>Loading...</p>
 }
 else {
-<p><i>Rolė: @user.Id</i></p>
+<p><i>Role: @user.Role</i></p>
 }
 
 <EditForm Model="@model" OnValidSubmit="@AddNewLessons" OnInvalidSubmit="@InvalidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary/>
     <div class="form-group">
-        <label>Data</label>
-        <InputDate disabled="true" @bind-Value="model.pamokos_pradzia" class="form-control" />
-        <!-- reiketu veliau dar idet valandu picker -->
+        <label>Date</label>
+        <InputDate disabled="true" @bind-Value="model.start_time" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Vieta</label>
-        <InputText @bind-Value="model.vietove" class="form-control" />
+        <label>Location</label>
+        <InputText @bind-Value="model.location" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Instrumentas</label>
-        <InputText @bind-Value="model.instrumentas" class="form-control" />
+        <label>Instrument</label>
+        <InputText @bind-Value="model.instrument" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Kaina</label>
-        <InputNumber @bind-Value="model.kaina" class="form-control" />
+        <label>Price</label>
+        <InputNumber @bind-Value="model.price" class="form-control" />
     </div>
     <div class="form-group">
-        <label>Mokiniu skaičius</label>
-        <InputNumber @bind-Value="model.mokiniu_skaicius" class="form-control" />
+        <label>Student Count</label> <!-- sita programiskai reikes idet veliau i think -->
+        <InputNumber @bind-Value="model.student_count" class="form-control" />
     </div>
     <div>
-        <label>Pamokos tipas</label>
-        <InputSelect @bind-Value="model.pamokos_tipas" class="form-select" required="required">
-            <option value="">Pasirinkite pamokos tipą</option>
-            <option value="Gyva">Gyva</option>
-            <option value="Nuotolinė">Nuotolinė</option>
+        <label>Lesson type</label>
+        <InputSelect @bind-Value="model.lesson_type" class="form-select" required="required">
+            <option value="">Select a lesson type</option>
+            <option value="Live">Live</option>
+            <option value="Online">Online</option>
 
         </InputSelect>
     </div><br>
@@ -59,7 +58,7 @@ else {
         {
             <span class="spinner-border spinner-border-sm mr-1"></span>
         }
-        Registruotis
+        Add New Lesson
     </button>
 </EditForm>
 
@@ -74,32 +73,31 @@ else {
 
 
 
-    private Pamoka model = new Pamoka();
+    private Lesson model = new Lesson();
 
-    // makes a user in the database
-    // does not check if there is a user registered with that email.
+    // adds a lesson in the database
     private async Task AddNewLessons() 
     {
         loading = true;     // silly button effect to show that something is happening
 
-        string sql = "INSERT INTO pamokos (mokytojo_id, pamokos_pradzia, vietove, pamokos_trukme, kaina, instrumentas, mokiniu_skaicius, pamokos_tipas) VALUES('" 
+        string sql = "INSERT INTO lessons (teacher_id, start_time, location, length, price, instrument, student_count, lesson_type) VALUES('" 
         + 1 + "','" // kol kas cia visada mokytojo id bus 1
-        + model.pamokos_pradzia + "','"
-        + model.vietove + "','"
-        + model.pamokos_trukme + "','"
-        + model.kaina + "','"
-        + model.instrumentas + "','"
-        + model.mokiniu_skaicius + "','"
-        + model.pamokos_tipas + "');";
+        + model.start_time + "','"
+        + model.location + "','"
+        + model.length + "','"
+        + model.price + "','"
+        + model.instrument + "','"
+        + model.student_count + "','"
+        + model.lesson_type + "');";
 
-        string connstring = _config.GetConnectionString("default");         // the "default" connection string is located in appsettings.json
+        string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
             await connection.ExecuteAsync(sql, new { });
         }
 
         loading = false;
-        await js.InvokeVoidAsync("alert", "Pamoka pridėta");
+        await js.InvokeVoidAsync("alert", "Lesson Added");
         navManager.NavigateTo("/counter/show", true);
     }
     protected override void OnParametersSet()
@@ -110,7 +108,7 @@ else {
 
     private async Task InvalidSubmit()
     {
-        await js.InvokeVoidAsync("alert", "Neteisingi duomenys!");
+        await js.InvokeVoidAsync("alert", "Incorrect data. Please try again.");
     }
 
     protected override void OnInitialized()
@@ -119,7 +117,7 @@ else {
         string[] allChars = myvalue.Split('-');
         lessonDate = allChars[0] + '-' + allChars[1] + '-' + allChars[2];
         time = allChars[3];
-        model.pamokos_pradzia = DateTime.ParseExact(lessonDate + ' ' + time + ":00","yyyy-MM-dd h:mm",null);
+        model.start_time = DateTime.ParseExact(lessonDate + ' ' + time + ":00","yyyy-MM-dd h:mm",null);
     }
 
     public async Task GetSessionUser()
