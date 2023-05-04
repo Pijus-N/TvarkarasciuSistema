@@ -1,0 +1,191 @@
+﻿@page "/details/{myvalue}"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+<PageTitle>Pamokos informacija</PageTitle>
+<h1>Pamokos informacija</h1>
+@if (dataLoaded)
+{
+    string date = model.pamokos_pradzia.ToShortDateString();
+    <EditForm Model="@model">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label>Data</label>
+            <InputText disabled="true" @bind-Value="date" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Vieta</label>
+            <InputText disabled="true" @bind-Value="model.vietove" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Instrumentas</label>
+            <InputText disabled="true" @bind-Value="model.instrumentas" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Kaina</label>
+            <InputNumber disabled="true" @bind-Value="model.kaina" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Mokiniu skaičius</label>
+            <InputNumber disabled="true" @bind-Value="model.mokiniu_skaicius" class="form-control" />
+        </div>
+        <div>
+            <label>Pamokos tipas</label>
+            <InputText disabled="true" @bind-Value="model.pamokos_tipas" class="form-control" />
+        </div><br>
+        @if(!regitered)
+        {
+            <button disabled="@loading" class="btn btn-primary" type="button" @onclick="Register">
+                @if (loading)
+                {
+                    <span class="spinner-border spinner-border-sm mr-1"></span>
+                }
+                Registruotis
+            </button>
+        }
+        else
+        {
+            <button disabled="@loading" class="btn btn-danger" type="button" @onclick="UnRegister">
+                @if (loading)
+                {
+                    <span class="spinner-border spinner-border-sm mr-1"></span>
+                }
+                Atšaukti registraciją
+            </button>
+        }
+    </EditForm>
+
+}
+else
+{
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public string myvalue { get; set; }
+    public string lessonDate { get; set; }
+    public string time { get; set; }
+    public int mokinio_id { get; set; }
+
+    bool loading = false;
+
+    bool regitered = false;
+    bool dataLoaded = false;
+
+    private Pamoka model = new Pamoka();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+
+        //the param will be set now
+        var test = myvalue;
+
+        await ReadDbData(myvalue);
+    }
+
+    protected override void OnInitialized()
+    {
+        
+    }
+
+    private async Task Register()
+    {
+        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        string connstring = _config.GetConnectionString("default");
+        using (MySqlConnection connection = new MySqlConnection(connstring))
+        {
+            connection.Open();
+
+            //use mokinio_id and pamokos_id to add new entry to registracijos
+            string query = "INSERT INTO `registracijos` (`mokinio_id`, `pamokos_id`) VALUES (@mokinys, @pamoka)";
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@mokinys", mokinio_id);
+                command.Parameters.AddWithValue("@pamoka", myvalue);
+
+                command.ExecuteNonQuery();
+            }
+        }
+        navManager.NavigateTo("/response/regitered");
+    }
+
+    private async Task UnRegister()
+    {
+        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        string connstring = _config.GetConnectionString("default");
+        using (MySqlConnection connection = new MySqlConnection(connstring))
+        {
+            connection.Open();
+
+            //use mokinio_id and pamokos_id to find an entry in registracijos and delete it
+            string query = "DELETE FROM `registracijos` WHERE mokinio_id = " + mokinio_id.ToString()+" AND pamokos_id = "+ myvalue;
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+        navManager.NavigateTo("/response/unregistered");
+    }
+
+    async Task ReadDbData(string id)
+    {
+        
+        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        string connstring = _config.GetConnectionString("default");
+        using (MySqlConnection connection = new MySqlConnection(connstring))
+        {
+            connection.Open();
+            //get mokinio_id using naudotojo_id
+            string query = "SELECT * FROM mokiniai WHERE naudotojo_id = " + user.Id.ToString() + " LIMIT 1";
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        mokinio_id = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            //use mokinio_id and pamokos_id to add new entry to registracijos
+            query = "SELECT * FROM `registracijos` WHERE mokinio_id = " + mokinio_id.ToString() + " AND pamokos_id = " + myvalue;
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    regitered = reader.HasRows;
+                }
+            }
+        }
+
+        // check if user exists in database
+        string sql = "select * from pamokos where id=@id limit 1";
+
+        // this thing should be a function somewhere
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Pamoka>(sql, new { id });
+            model = rows.First();
+        }
+        dataLoaded = true;
+    }
+
+}

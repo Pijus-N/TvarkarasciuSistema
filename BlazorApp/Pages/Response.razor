@@ -1,0 +1,45 @@
+﻿@page "/response/{myvalue}"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+<PageTitle>Registracija</PageTitle>
+
+@if (myvalue == "regitered")
+{
+    <h1>Sėkmingai užregistruota</h1>
+}
+else if (myvalue == "unregistered")
+{
+    <h1>Registracija atšaukta</h1>
+}
+
+
+
+
+
+
+@code {
+    [Parameter]
+    public string myvalue { get; set; }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+    }
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+}

@@ -12,34 +12,34 @@
  
 <PageTitle>Pamokos redagavimas</PageTitle>
 <h1>Pamokos redagavimas</h1>
- @if (dataLoaded)
-    {
+@if (dataLoaded)
+{
     <EditForm Model="@model" OnValidSubmit="@EditLesson" OnInvalidSubmit="@InvalidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary/>
     <div class="form-group">
         <label>Data</label>
-        <InputText disabled="true" @bind-Value="model.date" class="form-control" />
+        <InputDate disabled="true" @bind-Value="model.pamokos_pradzia" class="form-control" />
     </div>
-     <div class="form-group">
+        <div class="form-group">
         <label>Vieta</label>
-        <InputText @bind-Value="model.place" class="form-control" />
+        <InputText @bind-Value="model.vietove" class="form-control" />
     </div>
     <div class="form-group">
         <label>Instrumentas</label>
-        <InputText @bind-Value="model.instrument" class="form-control" />
+        <InputText @bind-Value="model.instrumentas" class="form-control" />
     </div>
     <div class="form-group">
         <label>Kaina</label>
-        <InputText @bind-Value="model.price" class="form-control" />
+        <InputNumber @bind-Value="model.kaina" class="form-control" />
     </div>
     <div class="form-group">
         <label>Mokiniu skaičius</label>
-        <InputText @bind-Value="model.students_count" class="form-control" />
+        <InputNumber @bind-Value="model.mokiniu_skaicius" class="form-control" />
     </div>
     <div>
         <label>Pamokos tipas</label>
-        <InputSelect @bind-Value="model.type" class="form-select" required="required">
+        <InputSelect @bind-Value="model.pamokos_tipas" class="form-select" required="required">
             <option value="">Pasirinkite pamokos tipą</option>
             <option value="Gyva">Gyva</option>
             <option value="Nuotolinė">Nuotolinė</option>
@@ -53,7 +53,7 @@
         }
         Atnaujinti
     </button>
-     <button disabled="@loading" class="btn btn-danger" type="button" @onclick="DeleteLesson">
+        <button disabled="@loading" class="btn btn-danger" type="button" @onclick="DeleteLesson">
         @if (loading) 
         {
             <span class="spinner-border spinner-border-sm mr-1"></span>
@@ -62,13 +62,13 @@
     </button>
     </EditForm>
             
-            }
-            else
-            {
-                <div class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-            }
+}
+else
+{
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+}
 
 
 
@@ -84,83 +84,75 @@
     private Pamoka model = new Pamoka();
     public Pamoka editableLesson = new Pamoka();
 
-    // makes a user in the database
-    // does not check if there is a user registered with that email.
     private async Task EditLesson() 
     {
         loading = true;     // silly button effect to show that something is happening
 
-       string sql = "UPDATE pamokos SET time = @time,place = @place, price = @price ,instrument = @instrument, students_count = @students_count, type = @type WHERE id = @id";
+        string sql = "UPDATE pamokos SET pamokos_pradzia = @pamokos_pradzia, vietove = @vietove, kaina = @kaina, instrumentas = @instrumentas, mokiniu_skaicius = @mokiniu_skaicius, pamokos_tipas = @pamokos_tipas WHERE id = @id";
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            await connection.ExecuteAsync(sql, new { time = model.time,place=model.place, price = model.price, instrument = model.instrument, students_count = model.students_count,type=model.type, id=@myvalue });
+            await connection.ExecuteAsync(sql, new { 
+                pamokos_pradzia = model.pamokos_pradzia, 
+                vietove = model.vietove, 
+                kaina = model.kaina, 
+                instrumentas = model.instrumentas, 
+                mokiniu_skaicius = model.mokiniu_skaicius, 
+                pamokos_tipas = model.pamokos_tipas, 
+                id = @myvalue });
         }
 
         loading = false;
-        await js.InvokeVoidAsync("alert", "Pamoka pridėta");
+        await js.InvokeVoidAsync("alert", "Pamoka atnaujinta");
         navManager.NavigateTo("/counter/show", true);
     }
     protected override async Task OnParametersSetAsync()
-{
-    await base.OnParametersSetAsync();
+    {
+        await base.OnParametersSetAsync();
 
+        //the param will be set now
+        var test = myvalue;
 
-    //the param will be set now
-    var test = myvalue;
-
-    await ReadDbData(myvalue);
-}
+        await ReadDbData(myvalue);
+    }
 
     private async Task InvalidSubmit()
     {
         await js.InvokeVoidAsync("alert", "Neteisingi duomenys!");
     }
 
-  
-
-   protected override void OnInitialized()
-        {
-           // Console.WriteLine(myvalue);
-           //await ReadDbData();
-          
-        }
-
-        async Task ReadDbData(string id)
+    protected override void OnInitialized()
     {
-        
+        // Console.WriteLine(myvalue);
+        //await ReadDbData();          
+    }
 
+    async Task ReadDbData(string id)
+    {      
         // check if user exists in database
         string sql = "select * from pamokos where id=@id";
         
         // this thing should be a function somewhere
         string connstring = _config.GetConnectionString("default");
-            using (IDbConnection connection = new MySqlConnection(connstring))
-            {
-                var rows = await connection.QueryAsync<Pamoka>(sql,new { id });
-                rows = rows.ToList();
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Pamoka>(sql,new { id });
+            rows = rows.ToList();
                 
-                foreach(var row in rows){
-                    Pamoka pamoka = row;
-                    //Console.WriteLine("Data");
-                    //Console.WriteLine(pamoka.date);
-                    //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
-                    string dataInString = pamoka.date.Split(' ')[0];
-                    pamoka.dateInFormat = DateTime.ParseExact(dataInString, "MM/dd/yyyy", null);
-                    //allLessons.Add(pamoka);
+            foreach(var row in rows){
+                Pamoka pamoka = row;
+                //Console.WriteLine("Data");
+                //Console.WriteLine(pamoka.date);
+                //Console.WriteLine(DateTime.Parse(pamoka.date.Split(' ')[0]));
 
-                    editableLesson = pamoka;
-                    model=pamoka;
+                //allLessons.Add(pamoka);
 
-                }
-                
-                
+                editableLesson = pamoka;
+                model=pamoka;
 
-                
-            }
-        
+            }                             
+        }        
         dataLoaded = true;
-
     }
 
     private async Task DeleteLesson()

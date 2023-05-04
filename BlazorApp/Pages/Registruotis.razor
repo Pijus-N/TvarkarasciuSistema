@@ -64,19 +64,17 @@
     {
         loading = true;     // silly button effect to show that something is happening
 
-        string sql = "INSERT INTO naudotojai (vardas, pavarde, elPastas, slaptazodis, gimimoData, role) VALUES('"
-        + model.vardas + "','"
-        + model.pavarde + "','"
-        + model.elPastas + "','"
-        + model.slaptazodis + "','"
-        + model.gimimoData + "','"
-        + model.role + "');";
-
-        // this thing should be a function somewhere
-        string connstring = _config.GetConnectionString("default");         // the "default" connection string is located in appsettings.json
-        using (IDbConnection connection = new MySqlConnection(connstring))  // connect to db using MySqlConnector
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            await connection.ExecuteAsync(sql, new { });
+            string query = "INSERT INTO naudotojai (vardas, pavarde, elPastas, slaptazodis, gimimoData, role) VALUES('"
+            + model.vardas + "','"
+            + model.pavarde + "','"
+            + model.elPastas + "','"
+            + model.slaptazodis + "','"
+            + model.gimimoData + "','"
+            + model.role + "');";
+            await connection.ExecuteAsync(query, new { });
         }
 
         loading = false;
