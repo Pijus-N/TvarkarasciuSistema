@@ -42,7 +42,31 @@
             <option value="guardian">guardian</option>
             <option value="administrator">administrator</option>
         </InputSelect>
-    </div><br>
+    </div>
+    @if (model.role == "teacher")
+    {
+        <br>
+        <h3>Teacher information (optional)</h3>
+        <div>
+            <label>Instrument</label>
+            <input @bind-value="teacher_instrument" class="form-control"/>
+        </div>
+        <div>
+            <label>Location</label>
+            <input @bind-value="teacher_location" class="form-control"/>
+        </div>
+        <div>
+            <label>Price</label>
+            <input @bind-value="teacher_price" class="form-control"/>
+        </div>
+        <div>
+            <label>Group_Price</label>
+            <input @bind-value="teacher_group_price" class="form-control"/>
+        </div>
+    }
+    
+    
+    <br>
     <button disabled="@loading" class="btn btn-primary" type="submit">
         @if (loading) 
         {
@@ -55,26 +79,37 @@
 
 @code {
     bool loading = false;
-
     private User model = new User();
+
+    string teacher_instrument, teacher_location, teacher_price, teacher_group_price = "";
 
     // makes a user in the database
     // does not check if there is a user registered with that email.
     private async Task RegisterUser() 
     {
         loading = true;     // silly button effect to show that something is happening
-
-        string connstring = _config.GetConnectionString("default");
-        using (IDbConnection connection = new MySqlConnection(connstring))
-        {
-            string query = "INSERT INTO users (name, lastname, email, password, birthdate, role) VALUES('"
+        string query = "INSERT INTO users (name, lastname, email, password, birthdate, role) VALUES('"
             + model.name + "','"
             + model.lastname+ "','"
             + model.email + "','"
             + model.password + "','"
             + model.birthdate + "','"
             + model.role + "');";
-            await connection.ExecuteAsync(query, new { });
+        SqlSaveData(query);
+
+        switch(model.role)
+        {
+            case "teacher":
+                CreateTeacher();
+                break;
+            case "student":
+                CreateStudent();
+                break;
+            case "guardian":
+                CreateGuardian();
+                break;
+            default:
+                break;
         }
 
         loading = false;
@@ -87,6 +122,54 @@
         await js.InvokeVoidAsync("alert", "Invalid registration data. Please try again.");
     }
 
+    public async void CreateTeacher()
+    {
+        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1";
+        List<User> user = await SqlLoadData<User>(query);
+
+        query = "INSERT INTO teachers (instrument, location, price, group_price, user_id) VALUES('"
+            + teacher_instrument + "','"
+            + teacher_location + "','"
+            + teacher_price + "','"
+            + teacher_group_price + "','"
+            + user[0].id + "');";
+        await SqlSaveData(query);
+        Console.WriteLine("Teacher inserted.");
+    }
+
+    public async void CreateStudent()
+    {
+        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1";
+        List<User> user = await SqlLoadData<User>(query);
+        query = "INSERT INTO students (user_id) VALUES('"
+            + user[0].id + "');";
+        await SqlSaveData(query);
+        Console.WriteLine("Student inserted.");
+    }
+
+    public async void CreateGuardian()
+    {
+        // later
+    }
+
+    public async Task SqlSaveData(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(query, new { });
+        }
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
 }
 
 

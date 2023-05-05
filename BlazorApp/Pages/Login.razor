@@ -44,18 +44,9 @@ Password
         loading = true;
 
         // check if user exists in database
-        string sql = "select * from users where email = @email AND password = @password limit 1";
+        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1";
 
-        List<User> foundUsers;
-        string connstring = _config.GetConnectionString("default");
-        using (IDbConnection connection = new MySqlConnection(connstring))
-        {
-            var rows = await connection.QueryAsync<User>(sql, new { 
-                @email = model.email, 
-                @password = model.password 
-            });
-            foundUsers = rows.ToList();
-        }
+        List<User> foundUsers = await SqlLoadData<User>(query);
 
         if (foundUsers.Count() < 1)       // if no users were found gives an alert
         {
@@ -95,6 +86,16 @@ Password
         useraccount.Role = user.role;
 
         _currentSession.SetItemAsync("SessionUser", useraccount);
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
     }
 }
 
