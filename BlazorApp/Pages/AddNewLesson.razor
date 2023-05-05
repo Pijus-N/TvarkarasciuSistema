@@ -82,7 +82,7 @@ else {
 
         string sql = "INSERT INTO lessons (teacher_id, start_time, location, length, price, instrument, student_count, lesson_type) VALUES('" 
         + 1 + "','" // kol kas cia visada mokytojo id bus 1
-        + model.start_time + "','"
+        + model.start_time.ToString("yyyy-MM-dd HH:mm:ss") + "','"
         + model.location + "','"
         + model.length + "','"
         + model.price + "','"
@@ -115,9 +115,9 @@ else {
     {
         GetSessionUser();
         string[] allChars = myvalue.Split('-');
-        lessonDate = allChars[0] + '-' + allChars[1] + '-' + allChars[2];
+        lessonDate = allChars[2]+  '-' + allChars[1] + '-' + allChars[0];
         time = allChars[3];
-        model.start_time = DateTime.ParseExact(lessonDate + ' ' + time + ":00","yyyy-MM-dd h:mm",null);
+        model.start_time = DateTime.ParseExact(lessonDate + ' ' + time + ":00","yyyy-MM-dd H:mm",null);
     }
 
     public async Task GetSessionUser()

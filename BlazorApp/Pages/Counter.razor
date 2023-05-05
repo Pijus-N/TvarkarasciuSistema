@@ -135,7 +135,7 @@
         }
         public string FullToString()
         {
-            return fullDate + ' ' + time.ToString();
+            return fullDate.Replace('/','-') + '-' + time.ToString();
         }
 
 
@@ -239,6 +239,7 @@
 
         }
         dataLoaded = true;
+        StateHasChanged();
     }
     void LoadNextWeek()
     {
