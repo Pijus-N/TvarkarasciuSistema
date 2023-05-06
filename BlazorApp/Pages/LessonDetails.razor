@@ -102,7 +102,7 @@ else
 
     protected override void OnInitialized()
     {
-        
+
     }
 
     private async Task Register()
@@ -146,26 +146,47 @@ else
 
     async Task ReadDbData(string id)
     {
-        
+
         var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
         string connstring = _config.GetConnectionString("default");
         using (MySqlConnection connection = new MySqlConnection(connstring))
         {
             connection.Open();
-            //get student_id using naudotojo_id
-            string query = "SELECT * FROM students WHERE user_id = " + user.Id.ToString() + " LIMIT 1";
-            using (MySqlCommand command = new MySqlCommand(query, connection))
+            string query;
+
+            if(user.Role == "student")
             {
-                using (MySqlDataReader reader = command.ExecuteReader())
+                //get student_id using user_id
+                query = "SELECT id FROM students WHERE user_id = " + user.Id.ToString() + " LIMIT 1";
+                using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    while (reader.Read())
+                    using (MySqlDataReader reader = command.ExecuteReader())
                     {
-                        student_id = reader.GetInt32(0);
+                        while (reader.Read())
+                        {
+                            student_id = reader.GetInt32(0);
+                        }
+                    }
+                }
+            }
+            else if(user.Role == "guardian")
+            {
+                //get student_id using user_id
+                query = "SELECT student_id FROM guardians WHERE user_id = " + user.Id.ToString() + " LIMIT 1";
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            student_id = reader.GetInt32(0);
+                        }
                     }
                 }
             }
 
-            //use student_id and lesson_id to add new entry to registrations
+
+            //use student_id and lesson_id to check if registered already
             query = "SELECT * FROM `registrations` WHERE student_id = " + student_id.ToString() + " AND lesson_id = " + myvalue;
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
