@@ -42,25 +42,28 @@
             <label>Lesson Type</label>
             <InputText disabled="true" @bind-Value="model.lesson_type" class="form-control" />
         </div><br>
-        @if(!registered)
+        @if(model.start_time > DateTime.Now)
         {
-            <button disabled="@loading" class="btn btn-primary" type="button" @onclick="Register">
-                @if (loading)
-                {
-                    <span class="spinner-border spinner-border-sm mr-1"></span>
-                }
-                Register
-            </button>
-        }
-        else
-        {
-            <button disabled="@loading" class="btn btn-danger" type="button" @onclick="UnRegister">
-                @if (loading)
-                {
-                    <span class="spinner-border spinner-border-sm mr-1"></span>
-                }
-                Cancel Registration
-            </button>
+            @if(!registered)
+            {
+                <button disabled="@loading" class="btn btn-primary" type="button" @onclick="Register">
+                    @if (loading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-1"></span>
+                    }
+                    Register
+                </button>
+            }
+            else
+            {
+                <button disabled="@loading" class="btn btn-danger" type="button" @onclick="UnRegister">
+                    @if (loading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-1"></span>
+                    }
+                    Cancel Registration
+                </button>
+            }
         }
     </EditForm>
 
