@@ -93,10 +93,9 @@
             + model.lastname+ "','"
             + model.email + "','"
             + model.password + "','"
-            + model.birthdate + "','"
+            + model.birthdate.ToString("yyyy-MM-dd HH:mm:ss") + "','"
             + model.role + "');";
         SqlSaveData(query);
-
         switch(model.role)
         {
             case "teacher":

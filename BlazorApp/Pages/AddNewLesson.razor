@@ -98,7 +98,7 @@ else {
 
         loading = false;
         await js.InvokeVoidAsync("alert", "Lesson Added");
-        navManager.NavigateTo("/counter/show", true);
+        navManager.NavigateTo("/TimeTable/show", true);
     }
     protected override void OnParametersSet()
     {
@@ -115,7 +115,7 @@ else {
     {
         GetSessionUser();
         string[] allChars = myvalue.Split('-');
-        lessonDate = allChars[0]+  '-' + allChars[1] + '-' + allChars[2];
+        lessonDate = allChars[2]+  '-' + allChars[1] + '-' + allChars[0];
         time = allChars[3];
         model.start_time = DateTime.ParseExact(lessonDate + ' ' + time + ":00","yyyy-MM-dd H:mm",null);
     }
