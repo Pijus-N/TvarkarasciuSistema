@@ -1,0 +1,143 @@
+﻿@page "/Homework/{myvalue}"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+
+<p id="date-time"></p>
+<PageTitle>Homework</PageTitle>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Homework Page</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Homework Page</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Issuer</th>
+            <th>Student</th>
+            <th>Task</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            @if (dataLoaded){
+                @for (int i = 0; i < allHomework.Count; i++){
+                    Homework day = allHomework[i];
+                    <tr>
+                        <td>@day.teacher_id</td>
+                        <td>John Doe</td>
+                        <td>@day.description</td>
+                        <td>05/01/2023</td>
+                        <td>05/08/2023</td>
+                        <td><button class="modify-btn">Modify</button></td>
+                    </tr>
+                }
+
+
+            }
+        
+          
+          <!-- Add more homework rows here -->
+        </tbody>
+      </table>
+      <button>Add New Homework</button>
+    </div>
+  </body>
+</html>
+
+
+
+
+@code {
+    [Parameter]
+    public string myvalue { get; set; }
+    public List<Homework> allHomework = new List<Homework>();
+    public UserAccount user = new UserAccount();
+    bool dataLoaded = false;
+    protected override async Task OnInitializedAsync()
+    {
+
+        await ReadDbData();
+        try
+        {
+            await GetSessionUser();
+        }
+        catch 
+        {
+            // Ignore
+        }
+
+       
+        StateHasChanged();
+    }
+
+     public async Task GetSessionUser()
+    {
+
+        
+
+        try
+        {
+            user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        }
+        catch (JSDisconnectedException ex)
+        {
+            // Ignore
+        }
+
+    }
+
+     async Task ReadDbData()
+    {
+
+
+        // check if user exists in database
+        string sql = "select * from homework";
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Homework>(sql);
+            rows = rows.ToList();
+
+            foreach (var row in rows)
+            {
+                Homework homework = row;
+                //Console.WriteLine("Data");
+                //Console.WriteLine(Lesson.date);
+                //Console.WriteLine(DateTime.Parse(Lesson.date.Split(' ')[0]));
+                allHomework.Add(homework);
+                //Console.WriteLine(allLessons.Count);
+
+
+            }
+
+
+
+
+        }
+
+
+        dataLoaded = true;
+    }
+
+}
+
+
+
+
