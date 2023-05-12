@@ -1,0 +1,115 @@
+@page "/addnewhomework"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+ 
+<PageTitle>Homework Creation</PageTitle>
+<h1>Add new homwork</h1>
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else {
+<p><i>Role: @user.Role</i></p>
+}
+
+<EditForm Model="@model" OnValidSubmit="@AddNewLessons" OnInvalidSubmit="@InvalidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary/>
+    <div class="form-group">
+        <label>Assignment date</label>
+        <InputDate disabled="true" @bind-Value="model.assignment_date" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Completion date</label>
+        <InputText @bind-Value="model.completion_data" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <InputText @bind-Value="model.description" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Students</label>
+        <InputNumber @bind-Value="model.price" class="form-control" />
+    </div>
+  
+    <br>
+    <button disabled="@loading" class="btn btn-primary" type="submit">
+        @if (loading) 
+        {
+            <span class="spinner-border spinner-border-sm mr-1"></span>
+        }
+        Add New Lesson
+    </button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public string myvalue{ get; set; }
+    public string lessonDate{ get; set; }
+    public string time{ get; set; }
+    bool loading = false;
+    public UserAccount user = new UserAccount();
+
+
+
+    private Homework model = new Homework();
+
+    // adds a lesson in the database
+    private async Task AddNewLessons() 
+    {
+        loading = true;     // silly button effect to show that something is happening
+
+        string sql = "INSERT INTO lessons (teacher_id, start_time, location, length, price, instrument, student_count, lesson_type) VALUES('" 
+        + 1 + "','" // kol kas cia visada mokytojo id bus 1
+        + model.start_time.ToString("yyyy-MM-dd HH:mm:ss") + "','"
+        + model.location + "','"
+        + model.length + "','"
+        + model.price + "','"
+        + model.instrument + "','"
+        + model.student_count + "','"
+        + model.lesson_type + "');";
+
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { });
+        }
+
+        loading = false;
+        await js.InvokeVoidAsync("alert", "Lesson Added");
+        navManager.NavigateTo("/TimeTable/show", true);
+    }
+    protected override void OnParametersSet()
+    {
+        //the param will be set now
+        var test = myvalue;
+    }
+
+    private async Task InvalidSubmit()
+    {
+        await js.InvokeVoidAsync("alert", "Incorrect data. Please try again.");
+    }
+
+    protected override void OnInitialized()
+    {
+        GetSessionUser();
+        //model.assignment_date = DateTime.Now();
+
+    }
+
+    public async Task GetSessionUser()
+    {
+        user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+}
