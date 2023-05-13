@@ -64,7 +64,11 @@
             <input @bind-value="teacher_group_price" class="form-control"/>
         </div>
     }
-    
+    @if (model.role == "guardian")
+    {
+        <label>working on it</label>
+    }
+
     
     <br>
     <button disabled="@loading" class="btn btn-primary" type="submit">

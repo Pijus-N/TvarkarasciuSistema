@@ -18,10 +18,7 @@ Email
 Password
 <input @bind="model.password" type="password" class="form-control" id="name"/>
 
-<div class="form-check">
-      <input type="checkbox" class="form-check-input" id="dropdownCheck">
-      Remember me
-</div>
+<a href="forgot_password">Forgot your password? Click here.</a><br />
 <a class="btn btn-primary" disabled="@loading" role="button" @onclick="Authenticate">
     @if (loading) 
     {
