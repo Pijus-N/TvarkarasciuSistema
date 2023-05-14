@@ -36,11 +36,10 @@
     <div>
         <label>Role</label>
         <InputSelect @bind-Value="model.role" class="form-select" required="required">
-            <option value="">select role (temporary)</option>
+            <option value="">select role</option>
             <option value="teacher">teacher</option>
             <option value="student">student</option>
             <option value="guardian">guardian</option>
-            <option value="administrator">administrator</option>
         </InputSelect>
     </div>
     @if (model.role == "teacher")
