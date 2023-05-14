@@ -1,0 +1,67 @@
+﻿@page "/admin_manage_users"
+@using BlazorServer.Models
+@using MySqlConnector
+@using Dapper
+@using System.Data
+@inject IConfiguration _config
+
+<PageTitle>Admin</PageTitle>
+<h1>Admin</h1>
+
+<a class="btn btn-primary" href="admin" role="button">Back</a>
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">ID</th>
+                <th scope="col">Email</th>
+                <th scope="col">Name</th>
+                <th scope="col">Role</th>
+            </tr>
+        </thead>
+        <tbody>
+        @{ int i = 1; }
+        @foreach (User user in users)
+        {
+            
+            <tr>
+                <th scope="row">@i</th>
+                <td>@user.id</td>
+                <td>@user.email</td>
+                <td>@user.name @user.lastname</td>
+                <td>@user.role</td>
+            </tr>
+            i++;
+        }
+        </tbody>    
+    </table>
+}
+<a class="btn btn-primary" href="admin" role="button">Back</a>
+
+@code {
+    List<User> users = new List<User>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "select * from users";
+
+        users = await SqlLoadData<User>(query);
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
+}
