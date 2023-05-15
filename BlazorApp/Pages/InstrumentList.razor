@@ -1,0 +1,70 @@
+@page "/listinstruments"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+ 
+<PageTitle>Instruments</PageTitle>
+
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Type</th>
+        <th>State</th>
+    </tr>
+
+    @foreach (var instrument in allInstruments)
+    {
+            <tr>
+                <td>@instrument.name</td>
+                <td>@instrument.description</td>
+                <td>@instrument.rental_price</td>
+                <td>@instrument.instrument_type</td>
+                <td>@instrument.instrument_state</td>
+            </tr>
+    }
+
+</table>
+
+
+@code
+{
+    private List<Instrument> allInstruments = new List<Instrument>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReadDbData();
+    }
+
+
+
+    async Task ReadDbData()
+    {
+
+        string connstring = _config.GetConnectionString("default");
+
+        using (MySqlConnection connection = new MySqlConnection(connstring))
+        {
+            string query = "SELECT * FROM instruments";
+            var rows = await connection.QueryAsync<Instrument>(query);
+            //rows = rows.ToList();
+
+            foreach (var row in rows)
+            {
+                Instrument instrument = row;
+                allInstruments.Add(instrument);
+            }
+        }
+
+    }
+}

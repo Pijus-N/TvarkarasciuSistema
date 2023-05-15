@@ -115,7 +115,7 @@ else {
     {
         GetSessionUser();
         string[] allChars = myvalue.Split('-');
-        lessonDate = allChars[2]+  '-' + allChars[1] + '-' + allChars[0];
+        lessonDate = allChars[0]+  '-' + allChars[1] + '-' + allChars[2];
         time = allChars[3];
         model.start_time = DateTime.ParseExact(lessonDate + ' ' + time + ":00","yyyy-MM-dd H:mm",null);
     }
