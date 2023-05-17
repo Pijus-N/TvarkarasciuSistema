@@ -13,7 +13,32 @@
  
 <PageTitle>Instruments</PageTitle>
 
+
+<h3>Rented instruments</h3>
 <table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Type</th>
+        <th>State</th>
+    </tr>
+    @foreach (var instrument in rentedInstruments)
+    {
+        <tr>
+            <td>@instrument.name</td>
+            <td>@instrument.description</td>
+            <td>@instrument.rental_price</td>
+            <td>@instrument.instrument_type</td>
+            <td>@instrument.instrument_state</td>
+            <td><button class="btn btn-danger" type="button" @onclick="() => Cancel(instrument.id)">Cancel</button></td>
+        </tr>
+    }
+
+</table>
+<h3>Available instruments</h3>
+<table class="table">
+
     <tr>
         <th>Name</th>
         <th>Description</th>
@@ -23,6 +48,8 @@
     </tr>
 
     @foreach (var instrument in allInstruments)
+    {
+        if (instrument.instrument_state == "Available")
         {
             <tr>
                 <td>@instrument.name</td>
@@ -30,26 +57,65 @@
                 <td>@instrument.rental_price</td>
                 <td>@instrument.instrument_type</td>
                 <td>@instrument.instrument_state</td>
-                <td><button disabled="@instrument.instrument_state == 'Available'" class="btn btn-warning" type="button" @onclick="() => Rent(instrument.id)">Rent</button></td>
+                <td><button class="btn btn-warning" type="button" @onclick="() => Rent(instrument.id)">Rent</button></td>
             </tr>
         }
+
+    }
 
 </table>
 
 
 @code
 {
+    public UserAccount user = new UserAccount();
+
     private List<Instrument> allInstruments = new List<Instrument>();
+    private List<Instrument> rentedInstruments = new List<Instrument>();
 
 
     protected override async Task OnInitializedAsync()
     {
-        await ReadDbData();
+        try
+        {
+            await GetSessionUser();
+            await ReadDbData();
+        }
+        catch
+        {
+            // Ignore
+        }
+    }
+
+    async Task Cancel(int instrument_id)
+    {
+
+        string connstring = _config.GetConnectionString("default");
+
+        using (MySqlConnection connection = new MySqlConnection(connstring))
+        {
+
+            connection.Open();
+
+            string query = "UPDATE `instruments` SET instrument_state = 'Available' WHERE instruments.id = @instrument";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+
+                command.Parameters.AddWithValue("@instrument", instrument_id);
+
+                int rowsAffected = command.ExecuteNonQuery();
+            }
+
+        }
+
+        await js.InvokeVoidAsync("alert", "Order complete");
+        navManager.NavigateTo("/listinstruments", true);
+
     }
 
     async Task Rent(int instrument_id)
     {
-        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
         int user_id = user.Id;
         string connstring = _config.GetConnectionString("default");
 
@@ -67,18 +133,18 @@
 
                 int rowsAffected = command.ExecuteNonQuery();
             }
-            
+
         }
 
         await js.InvokeVoidAsync("alert", "Order complete");
-        navManager.NavigateTo("/", true);
-
+        navManager.NavigateTo("/listinstruments", true);
     }
 
 
     async Task ReadDbData()
     {
 
+        int user_id = user.Id;
         string connstring = _config.GetConnectionString("default");
 
         using (MySqlConnection connection = new MySqlConnection(connstring))
@@ -90,8 +156,29 @@
             foreach (var row in rows)
             {
                 Instrument instrument = row;
+
+                if (instrument.renter_id == user_id && instrument.instrument_state == "Reserved")
+                {
+                    rentedInstruments.Add(instrument);
+                }
                 allInstruments.Add(instrument);
+
             }
+
+        }
+    }
+    public async Task GetSessionUser()
+    {
+
+
+
+        try
+        {
+            user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        }
+        catch (JSDisconnectedException ex)
+        {
+            // Ignore
         }
 
     }

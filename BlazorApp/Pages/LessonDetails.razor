@@ -42,9 +42,9 @@
             <label>Lesson Type</label>
             <InputText disabled="true" @bind-Value="model.lesson_type" class="form-control" />
         </div><br>
-        @if(model.start_time > DateTime.Now)
+        @if (model.start_time > DateTime.Now)
         {
-            @if(!registered)
+            @if (!registered)
             {
                 <button disabled="@loading" class="btn btn-primary" type="button" @onclick="Register">
                     @if (loading)
@@ -63,6 +63,8 @@
                     }
                     Cancel Registration
                 </button>
+                <a href="/listinstruments">Rent an instrument</a>
+
             }
         }
     </EditForm>
@@ -90,6 +92,7 @@ else
     bool dataLoaded = false;
 
     private Lesson model = new Lesson();
+    public UserAccount user = new UserAccount();
 
 
     protected override async Task OnParametersSetAsync()
@@ -100,17 +103,26 @@ else
         //the param will be set now
         var test = myvalue;
 
-        await ReadDbData(myvalue);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+
+        try
+        {
+            await GetSessionUser();
+            await ReadDbData(myvalue);
+        }
+        catch
+        {
+            // Ignore
+        }
 
     }
 
     private async Task Register()
     {
-        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+
         string connstring = _config.GetConnectionString("default");
         using (MySqlConnection connection = new MySqlConnection(connstring))
         {
@@ -131,7 +143,7 @@ else
 
     private async Task UnRegister()
     {
-        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+
         string connstring = _config.GetConnectionString("default");
         using (MySqlConnection connection = new MySqlConnection(connstring))
         {
@@ -150,7 +162,7 @@ else
     async Task ReadDbData(string id)
     {
 
-        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+
         string connstring = _config.GetConnectionString("default");
         using (MySqlConnection connection = new MySqlConnection(connstring))
         {
@@ -211,5 +223,16 @@ else
         }
         dataLoaded = true;
     }
+    public async Task GetSessionUser()
+    {
+        try
+        {
+            user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        }
+        catch (JSDisconnectedException ex)
+        {
+            // Ignore
+        }
 
+    }
 }
