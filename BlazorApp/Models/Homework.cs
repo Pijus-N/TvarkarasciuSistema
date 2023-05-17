@@ -15,8 +15,6 @@ namespace BlazorServer.Models
         [Required]
         public int teacher_id { get; set; }
         [Required]
-        public int lesson_id { get; set; }
-        [Required]
         public int student_id { get; set; }
 
 

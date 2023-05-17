@@ -20,10 +20,11 @@
 else {
 <p><i>Role: @user.Role</i></p>
 }
-
+ @if(!loading){
 <EditForm Model="@model" OnValidSubmit="@AddNewLessons" OnInvalidSubmit="@InvalidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary/>
+   
     <div class="form-group">
         <label>Assignment date</label>
         <InputDate disabled="true" @bind-Value="model.assignment_date" class="form-control" />
@@ -34,6 +35,15 @@ else {
         <InputDate @bind-Value="model.completion_data" class="form-control" />
     </div>
     <div class="form-group">
+    <label>Student</label><br>
+    <select  @bind="studentId">
+    @foreach (User student in allStundets)
+    {
+        <option value="@student.id">@student.name</option>
+    }
+    </select>
+    </div>
+    <div class="form-group">
         <label>Description</label>
         <InputText @bind-Value="model.description" class="form-control" />
     </div>
@@ -41,41 +51,40 @@ else {
   
     <br>
     <button disabled="@loading" class="btn btn-primary" type="submit">
-        @if (loading) 
-        {
-            <span class="spinner-border spinner-border-sm mr-1"></span>
-        }
+        
         Add New Lesson
     </button>
+    
 </EditForm>
-
+    }
 
 @code {
     [Parameter]
     public string myvalue{ get; set; }
     public string lessonDate{ get; set; }
     public string time{ get; set; }
-    bool loading = false;
+    bool loading = true;
     public UserAccount user = new UserAccount();
-
-
+    public List<User> allStundets = new List<User>();
+    public User selectedStudent;
+    public int studentId=0;
 
     private Homework model = new Homework();
 
     // adds a lesson in the database
     private async Task AddNewLessons() 
     {
-      /*  loading = true;     // silly button effect to show that something is happening
+        loading = true;     // silly button effect to show that something is happening
 
-        string sql = "INSERT INTO lessons (teacher_id, start_time, location, length, price, instrument, student_count, lesson_type) VALUES('" 
-        + 1 + "','" // kol kas cia visada mokytojo id bus 1
-        + model.start_time.ToString("yyyy-MM-dd HH:mm:ss") + "','"
-        + model.location + "','"
-        + model.length + "','"
-        + model.price + "','"
-        + model.instrument + "','"
-        + model.student_count + "','"
-        + model.lesson_type + "');";
+        int studId = await GetStudentId(studentId);
+
+        string sql = "INSERT INTO homework (assignment_date, completion_data, description, isDeleted, teacher_id, student_id) VALUES('" 
+        + model.assignment_date.ToString("yyyy-MM-dd") + "','"
+        + model.completion_data.ToString("yyyy-MM-dd") + "','"
+        + model.description + "','"
+        + 0 + "','"
+        + model.teacher_id + "','"
+        + studId + "');";
 
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
@@ -84,8 +93,8 @@ else {
         }
 
         loading = false;
-        await js.InvokeVoidAsync("alert", "Lesson Added");
-        navManager.NavigateTo("/TimeTable/show", true);*/
+        await js.InvokeVoidAsync("alert", "Homework Added");
+        navManager.NavigateTo("/Homework/show", true);
     }
     protected override void OnParametersSet()
     {
@@ -98,17 +107,83 @@ else {
         await js.InvokeVoidAsync("alert", "Incorrect data. Please try again.");
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        GetSessionUser();
+        try
+        {
+            await GetSessionUser();
+        }
+        catch 
+        {
+            // Ignore
+        }
+
+        await GetAllStudents();
+        model.teacher_id = await GetTeacherId(user.Id);
         model.assignment_date = DateTime.Now;
         model.completion_data = DateTime.Now;
-
+        loading = false;
+        StateHasChanged();
     }
 
     public async Task GetSessionUser()
     {
         user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+    public async Task GetAllStudents()
+    {
+        loading = true;
+        string connstring = _config.GetConnectionString("default");
+        // check if user exists in database
+         string query = @"
+            SELECT *
+            FROM Users u
+            WHERE u.Role = 'student'
+        ";
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var result = await connection.QueryAsync<User>(query);
+            allStundets = result.ToList();
+        }
+        
+        
+    }
+
+    public async Task<int> GetStudentId(int id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT id
+        FROM students
+        WHERE user_id = @id
+    ";
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = id };
+            var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
+            return result;
+        }
+    }
+
+    public async Task<int> GetTeacherId(int id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT id
+        FROM teachers
+        WHERE user_id = @id
+    ";
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = id };
+            var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
+            return result;
+        }
     }
 
 }
