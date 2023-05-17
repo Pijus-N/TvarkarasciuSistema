@@ -23,15 +23,16 @@
     </tr>
 
     @foreach (var instrument in allInstruments)
-    {
+        {
             <tr>
                 <td>@instrument.name</td>
                 <td>@instrument.description</td>
                 <td>@instrument.rental_price</td>
                 <td>@instrument.instrument_type</td>
                 <td>@instrument.instrument_state</td>
+                <td><button disabled="@instrument.instrument_state == 'Available'" class="btn btn-warning" type="button" @onclick="() => Rent(instrument.id)">Rent</button></td>
             </tr>
-    }
+        }
 
 </table>
 
@@ -46,6 +47,33 @@
         await ReadDbData();
     }
 
+    async Task Rent(int instrument_id)
+    {
+        var user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        int user_id = user.Id;
+        string connstring = _config.GetConnectionString("default");
+
+        using (MySqlConnection connection = new MySqlConnection(connstring))
+        {
+
+            connection.Open();
+
+            string query = "UPDATE `instruments` SET instrument_state = 'Reserved', renter_id = @renter WHERE instruments.id = @instrument";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@renter", user_id);
+                command.Parameters.AddWithValue("@instrument", instrument_id);
+
+                int rowsAffected = command.ExecuteNonQuery();
+            }
+            
+        }
+
+        await js.InvokeVoidAsync("alert", "Order complete");
+        navManager.NavigateTo("/", true);
+
+    }
 
 
     async Task ReadDbData()
@@ -67,4 +95,4 @@
         }
 
     }
-}
+    }
