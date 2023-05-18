@@ -185,16 +185,18 @@
     protected override async Task OnInitializedAsync()
     {
 
-        await ReadDbData();
         try
         {
             await GetSessionUser();
+            await ReadDbData();
         }
-        catch 
+        catch
         {
+
             // Ignore
         }
-
+        if(user == null)
+            navManager.NavigateTo("/login", true);
         Console.WriteLine(user.Id);
         _displaydate = DateTime.Now.ToString("U");
         localDate = DateTime.Now;
@@ -327,7 +329,7 @@
     public async Task GetSessionUser()
     {
 
-        
+
 
         try
         {
@@ -335,6 +337,7 @@
         }
         catch (JSDisconnectedException ex)
         {
+
             // Ignore
         }
 

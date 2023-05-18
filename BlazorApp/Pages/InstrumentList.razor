@@ -1,4 +1,4 @@
-@page "/listinstruments"
+ty@page "/listinstruments"
 @using BlazorServer.Models
 @using BlazorServer.Authentication
 @using System.Data
@@ -49,18 +49,14 @@
 
     @foreach (var instrument in allInstruments)
     {
-        if (instrument.instrument_state == "Available")
-        {
-            <tr>
-                <td>@instrument.name</td>
-                <td>@instrument.description</td>
-                <td>@instrument.rental_price</td>
-                <td>@instrument.instrument_type</td>
-                <td>@instrument.instrument_state</td>
-                <td><button class="btn btn-warning" type="button" @onclick="() => Rent(instrument.id)">Rent</button></td>
-            </tr>
-        }
-
+        <tr>
+            <td>@instrument.name</td>
+            <td>@instrument.description</td>
+            <td>@instrument.rental_price</td>
+            <td>@instrument.instrument_type</td>
+            <td>@instrument.instrument_state</td>
+            <td><button class="btn btn-warning" type="button" @onclick="() => Rent(instrument.id)">Rent</button></td>
+        </tr>
     }
 
 </table>
@@ -161,7 +157,8 @@
                 {
                     rentedInstruments.Add(instrument);
                 }
-                allInstruments.Add(instrument);
+                if (instrument.instrument_state == "Available")
+                    allInstruments.Add(instrument);
 
             }
 
@@ -169,9 +166,6 @@
     }
     public async Task GetSessionUser()
     {
-
-
-
         try
         {
             user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
