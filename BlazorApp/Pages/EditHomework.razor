@@ -1,0 +1,216 @@
+@page "/edithomework/{myvalue}"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+ 
+<PageTitle>Homework Creation</PageTitle>
+<h1>Add new homwork</h1>
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else {
+<p><i>Role: @user.Role</i></p>
+}
+ @if(loading){
+<EditForm Model="@model" OnValidSubmit="@EditLessons" OnInvalidSubmit="@InvalidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary/>
+   
+    <div class="form-group">
+        <label>Assignment date</label>
+        <InputDate disabled="true" @bind-Value="model.assignment_date" class="form-control" />
+    </div>
+    
+    <div class="form-group">
+        <label>Completion date</label>
+        <InputDate @bind-Value="model.completion_data" class="form-control" />
+    </div>
+    <div class="form-group">
+    <label>Student</label><br>
+    <select  @bind="studentId">
+    @foreach (User student in allStundets)
+    {
+        <option value="@student.id">@student.name</option>
+    }
+    </select>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <InputText @bind-Value="model.description" class="form-control" />
+    </div>
+
+  
+    <br>
+    <button  class="btn btn-primary" type="submit">
+        
+        Edit Homework
+    </button>
+    
+</EditForm>
+    }
+
+@code {
+    [Parameter]
+    public string myvalue{ get; set; }
+    public string lessonDate{ get; set; }
+    public string time{ get; set; }
+    bool loading = false;
+    public UserAccount user = new UserAccount();
+    public List<User> allStundets = new List<User>();
+    public User selectedStudent;
+    public int studentId=0;
+
+    private Homework model = new Homework();
+
+    // adds a lesson in the database
+    private async Task EditLessons() 
+    {
+   // silly button effect to show that something is happening
+
+        int studId = await GetStudentId(studentId);
+
+    // silly button effect to show that something is happening
+
+        string sql = "UPDATE homework SET assignment_date = @assignment_date, completion_data = @completion_data, description = @description, student_id = @student_id WHERE id = @id";
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { 
+                assignment_date = model.assignment_date, 
+                completion_data = model.completion_data, 
+                description = model.description, 
+                student_id = model.student_id, 
+                id = @myvalue });
+        }
+
+        loading = false;
+        await js.InvokeVoidAsync("alert", "Lesson updated.");
+        navManager.NavigateTo("/Homework/show", true);
+    }
+    protected override void OnParametersSet()
+    {
+        //the param will be set now
+        var test = myvalue;
+    }
+
+    private async Task InvalidSubmit()
+    {
+        await js.InvokeVoidAsync("alert", "Incorrect data. Please try again.");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        //the param will be set now
+        var test = myvalue;
+
+        await ReadDbData(myvalue);
+    }
+
+    async Task ReadDbData(string id)
+    {      
+        // check if user exists in database
+        string sql = "select * from homework where id=@id";
+        
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Homework>(sql,new { id });
+            rows = rows.ToList();
+                
+            foreach(var row in rows){
+                Homework Lesson = row;
+                //Console.WriteLine("Data");
+                //Console.WriteLine(Lesson.date);
+                //Console.WriteLine(DateTime.Parse(Lesson.date.Split(' ')[0]));
+
+                //allLessons.Add(Lesson);
+
+               Homework editableLesson = Lesson;
+                model=Lesson;
+
+            }                             
+        } 
+        await GetAllStudents();     
+
+        loading = true;
+    }
+
+    public async Task GetSessionUser()
+    {
+        user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+    public async Task GetAllStudents()
+    {
+        loading = true;
+        string connstring = _config.GetConnectionString("default");
+        // check if user exists in database
+         string query = @"
+            SELECT *
+            FROM Users u
+            WHERE u.Role = 'student'
+        ";
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var result = await connection.QueryAsync<User>(query);
+            allStundets = result.ToList();
+        }
+        
+        
+    }
+
+    
+
+    public async Task<int> GetStudentId(int id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT id
+        FROM students
+        WHERE user_id = @id
+    ";
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = id };
+            var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
+            return result;
+        }
+    }
+
+    public async Task<int> GetTeacherId(int id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT id
+        FROM teachers
+        WHERE user_id = @id
+    ";
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = id };
+            var result = await connection.QueryFirstOrDefaultAsync<int>(query, parameters);
+            return result;
+        }
+    }
+
+}
