@@ -1,0 +1,80 @@
+﻿@page "/userslist/{lessonid:int}"
+@inject NavigationManager navManager
+@using BlazorServer.Authentication
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+@using BlazorServer.Models
+@using MySqlConnector
+@using Dapper
+@using System.Data
+@inject IConfiguration _config
+@attribute [Authorize(Roles = "teacher")]
+
+<PageTitle>Lesson List</PageTitle>
+<h1>Lesson List</h1>
+@lessonId
+@if (studentIds == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+        @{ int i = 1; }
+        @foreach (User student in students)
+        {
+            <tr>
+                <th scope="row">@i</th>
+                <td>@student.name @student.lastname</td>
+                <td>
+                    <a class="btn btn-primary" role="button">Edit</a>
+                </td>               
+            </tr>
+            i++;
+        }
+        </tbody>    
+    </table>
+}
+<a class="btn btn-primary" href="lessonlist" role="button">Back</a>
+
+@code {
+    [Parameter] public int lessonId { get; set; }
+    List<int> studentIds = new List<int>();
+    List<User> students = new List<User>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "SELECT student_id FROM registrations WHERE (lesson_id) = (SELECT '" + lessonId + "')";
+        List<int> studentIds = await SqlLoadData<int>(query);
+
+        foreach(int student_id in studentIds)
+        {
+            query = "SELECT * FROM students WHERE (id) = (SELECT '" + student_id + "') LIMIT 1"; // fetch user id
+            List<Student> student = await SqlLoadData<Student>(query);
+
+            query = "SELECT * FROM users WHERE (id) = (SELECT '" + student.First().user_id + "') LIMIT 1"; // fetch user
+            List<User> user = await SqlLoadData<User>(query);
+
+            students.Add(user.First()); // add to list
+        }
+
+
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
+}
