@@ -124,7 +124,7 @@
             + model.password + "','"
             + model.birthdate.ToString("yyyy-MM-dd HH:mm:ss") + "','"
             + model.role + "');";
-        SqlSaveData(query);
+        await SqlSaveData(query);
         switch(model.role)
         {
             case "teacher":
@@ -184,7 +184,7 @@
             + student_password + "','"
             + student_birthdate.ToString("yyyy-MM-dd HH:mm:ss") + "','"
             + "student" + "');";
-        SqlSaveData(query); // create student user
+        await SqlSaveData(query); // create student user
 
         query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + student_email + "','" + student_password + "') LIMIT 1"; // fetch student user id
         List<User> studentUser = await SqlLoadData<User>(query);
