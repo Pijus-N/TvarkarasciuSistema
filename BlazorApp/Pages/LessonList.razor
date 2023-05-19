@@ -6,7 +6,10 @@
 @using Dapper
 @using System.Data
 @inject IConfiguration _config
-@attribute [Authorize(Roles = "teacher")]
+
+<CascadingAuthenticationState>
+<AuthorizeView Roles="teacher">
+<Authorized>
 
 <PageTitle>Lesson List</PageTitle>
 <h1>Lesson List</h1>
@@ -67,7 +70,10 @@ else
         </tbody>    
     </table>
 }
-<a class="btn btn-primary" href="admin" role="button">Back</a>
+
+
+
+
 
 @code {
     List<Lesson> lessons = new List<Lesson>();
@@ -113,3 +119,9 @@ else
         }
     }
 }
+</Authorized>
+<NotAuthorized>
+    Sorry, there's nothing at this address.
+</NotAuthorized>
+</AuthorizeView>
+</CascadingAuthenticationState>

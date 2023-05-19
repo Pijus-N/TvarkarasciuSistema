@@ -1,0 +1,136 @@
+﻿@page "/gradeslist"
+@using BlazorServer.Authentication
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+@using BlazorServer.Models
+@using MySqlConnector
+@using Dapper
+@using System.Data
+@inject IConfiguration _config
+
+<CascadingAuthenticationState>
+<AuthorizeView Roles="student, guardian">
+<Authorized>
+
+<PageTitle>Grade List</PageTitle>
+<h1>Grade List</h1>
+
+@if (loading == true)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Lesson</th>
+                <th scope="col">Grade</th>
+                <th scope="col">Attendance</th>
+                <th scope="col">Note</th>
+            </tr>
+        </thead>
+        <tbody>
+        @{ int i = 1; }
+        @foreach (Tuple<Lesson,Assessment> tuple in tuple_list)
+        {
+            <tr>
+                <th scope="row">@i</th>
+                <td>@tuple.Item1.start_time @tuple.Item1.instrument</td>
+                <td>@tuple.Item2.Grade</td>
+                <td style="color: @(tuple.Item2.Attendance == true ? "green" : "red")">@(tuple.Item2.Attendance == true ? "present" : "absent")</td>
+                <td>@tuple.Item2.Note</td>
+            </tr>
+            i++;
+        }
+        </tbody>    
+    </table>
+}
+
+</Authorized>
+
+
+
+@code {
+    bool loading = true;
+    UserAccount session = new UserAccount();
+    List<Tuple<Lesson, Assessment>> tuple_list = new List<Tuple<Lesson, Assessment>>();
+        List<Teacher> teacher_list = new List<Teacher>();
+
+    // session user id  → student id → registration → lesson
+    // student_id → select id from students where user_id = session_id
+    // registrations → select * from registrations where student_id = student_id
+    // then i guess i could
+    // for each registration in registrations i could select a specific lesson and assessment and smack it into a list of tuples
+
+    // fuck i forgot about teacher info
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            await GetSessionUser();
+            int student_id;
+            string query = "";
+            if (session.Role == "guardian")
+            {
+                query = "SELECT student_id FROM guardians WHERE (user_id) = (SELECT '" + session.Id + "') LIMIT 1"; // fetch student id
+                List<int> student_id_list = await SqlLoadData<int>(query);
+                student_id = student_id_list.First();
+            }
+            else
+            {
+                query = "SELECT id FROM students WHERE (user_id) = (SELECT '" + session.Id + "') LIMIT 1"; // fetch student id
+                List<int> student_id_list = await SqlLoadData<int>(query);
+                student_id = student_id_list.First();
+            }
+
+            query = "SELECT lesson_id FROM registrations WHERE (student_id) = (SELECT '" + student_id + "')"; // fetch user id
+            List<int> registrations_lesson_ids = await SqlLoadData<int>(query);          
+
+            foreach(int lesson_id in registrations_lesson_ids)
+            {
+                query = "select * FROM assessments WHERE (lesson_id, student_id) = (SELECT '" + lesson_id + "','" + student_id + "') LIMIT 1";
+                List<Assessment> assessment_list = await SqlLoadData<Assessment>(query);
+
+                if (assessment_list.Count() > 0)
+                {
+                    query = "select * FROM lessons WHERE (id) = (SELECT '" + lesson_id + "') LIMIT 1";
+                    List<Lesson> lesson_list = await SqlLoadData<Lesson>(query);
+
+                    tuple_list.Add(new Tuple<Lesson, Assessment>(lesson_list.First(), assessment_list.First()));
+                }
+
+            }
+            loading = false;
+            StateHasChanged();
+
+            loading = false;
+        }
+      
+    }
+
+
+
+    public async Task GetSessionUser()
+    {
+        session = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
+}
+
+<NotAuthorized>
+    Sorry, there's nothing at this address.
+</NotAuthorized>
+</AuthorizeView>
+</CascadingAuthenticationState>
