@@ -21,9 +21,11 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
- 
+  @if (dataLoaded){
     <div class="container">
-         <a href="/addnewhomework" class="add-new-homework">Add New Homework</a>
+        @if(user.Role=="teacher"){
+            <a href="/addnewhomework" class="add-new-homework">Add New Homework</a>
+        }
       <h1>Homework List</h1>
       <table>
         <thead>
@@ -37,21 +39,39 @@
           </tr>
         </thead>
         <tbody>
-            @if (dataLoaded){
+           
                 @for (int i = 0; i < allHomework.Count; i++){
                     Homework day = allHomework[i];
-                    <tr>
-                        <td>@allTeacherNames[i]</td>
-                        <td>@allStudentNames[i]</td>
-                        <td>@day.description</td>
-                        <td>@day.assignment_date</td>
-                        <td>@day.completion_data</td>
-                        <td><a href="/edithomework/@day.id" class="modify-homework">Modify</a></td>
-                    </tr>
+                    @if(day.isDeleted==0){
+                        @if(user.Id.ToString()==allTeacherIds[i] && user.Role=="teacher"){
+                            
+                        
+                                <tr>
+                                    <td>@allTeacherNames[i]</td>
+                                    <td>@allStudentNames[i]</td>
+                                    <td>@day.description</td>
+                                    <td>@day.assignment_date</td>
+                                    <td>@day.completion_data</td>
+                                    @if(user.Role=="teacher"){
+                                        <td><a href="/edithomework/@day.id" class="modify-homework">Modify</a></td>
+                                    }
+                                </tr>
+                        }
+                        @if(user.Id.ToString()==allStudentsIds[i] && user.Role=="student"){
+                                <tr>
+                                    <td>@allTeacherNames[i]</td>
+                                    <td>@allStudentNames[i]</td>
+                                    <td>@day.description</td>
+                                    <td>@day.assignment_date</td>
+                                    <td>@day.completion_data</td>
+                                </tr>
+                        }
+
+                    }
                 }
 
 
-            }
+            
         
           
           <!-- Add more homework rows here -->
@@ -59,7 +79,9 @@
       </table>
       
     </div>
+  }
   </body>
+   
 </html>
 
 
@@ -70,13 +92,15 @@
     public string myvalue { get; set; }
     public List<Homework> allHomework = new List<Homework>();
     public List<String> allTeacherNames = new List<String>();
+    public List<String> allTeacherIds = new List<String>();
+    public List<String> allStudentsIds = new List<String>();
       public List<String> allStudentNames = new List<String>();
     public UserAccount user = new UserAccount();
     bool dataLoaded = false;
     protected override async Task OnInitializedAsync()
     {
 
-        await ReadDbData();
+        
         try
         {
             await GetSessionUser();
@@ -85,7 +109,7 @@
         {
             // Ignore
         }
-
+        await ReadDbData();
        
         StateHasChanged();
     }
@@ -129,6 +153,8 @@
                 string teacherName = await GetTeacherName(homework.teacher_id);
                 allStudentNames.Add(await GetStudentName(homework.student_id));
                 allTeacherNames.Add(teacherName);
+                allTeacherIds.Add(await GetTeacherId(homework.teacher_id));
+                allStudentsIds.Add(await GetStudentId(homework.student_id));
                 //Console.WriteLine(allLessons.Count);
 
 
@@ -195,6 +221,39 @@
 
 
 
+    }
+
+    public async Task<string> GetStudentId(int students_id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT user_id from students where id = @Id
+    ";
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = students_id };
+            var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+            return result;
+        }
+    }
+
+    public async Task<string> GetTeacherId(int students_id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT user_id from teachers where id = @Id
+    ";
+
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = students_id };
+            var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+            return result;
+        }
     }
 
 }

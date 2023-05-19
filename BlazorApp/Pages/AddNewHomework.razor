@@ -96,6 +96,30 @@ else {
         await js.InvokeVoidAsync("alert", "Homework Added");
         navManager.NavigateTo("/Homework/show", true);
     }
+    private async Task AddNewLessons2() 
+    {
+         int studId = await GetStudentId(studentId);
+
+    // silly button effect to show that something is happening
+
+        string sql = "INSERT INTO homework assignment_date = @assignment_date, completion_data = @completion_data, description = @description,isDeleted=@isDeleted,teacher_id=@teacher_id, student_id = @student_id ";
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { 
+                assignment_date = model.assignment_date, 
+                completion_data = model.completion_data, 
+                description = model.description, 
+                isDeleted = 0,
+                student_id = model.student_id, 
+                teacher_id = model.teacher_id, 
+                id = @myvalue });
+        }
+
+        loading = false;
+        await js.InvokeVoidAsync("alert", "Lesson updated.");
+        navManager.NavigateTo("/Homework/show", true);
+    }
     protected override void OnParametersSet()
     {
         //the param will be set now

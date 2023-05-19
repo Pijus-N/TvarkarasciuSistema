@@ -54,6 +54,11 @@ else {
         
         Edit Homework
     </button>
+
+    <button class="btn btn-danger" type="button" @onclick="DeleteLessons">
+        
+        Delete
+    </button>
     
 </EditForm>
     }
@@ -89,6 +94,28 @@ else {
                 completion_data = model.completion_data, 
                 description = model.description, 
                 student_id = model.student_id, 
+                id = @myvalue });
+        }
+
+        loading = false;
+        await js.InvokeVoidAsync("alert", "Lesson updated.");
+        navManager.NavigateTo("/Homework/show", true);
+    }
+
+     private async Task DeleteLessons() 
+    {
+   // silly button effect to show that something is happening
+
+        int studId = await GetStudentId(studentId);
+
+    // silly button effect to show that something is happening
+
+        string sql = "UPDATE homework SET isDeleted = @isDeleted WHERE id = @id";
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { 
+                isDeleted = 1, 
                 id = @myvalue });
         }
 
