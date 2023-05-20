@@ -17,25 +17,25 @@ else
 {
     <div>
         <label>Name</label>
-        <input type="text" @bind="user.name" class="form-control">
+        <input type="text" @bind-value="user.name" class="form-control">
         <label>Last name</label>
-        <input type="text" @bind="user.lastname" class="form-control">
+        <input type="text" @bind-value="user.lastname" class="form-control">
         <label>Email</label>
-        <input type="text" @bind="user.email" class="form-control">
+        <input type="text" @bind-value="user.email" class="form-control">
         <label>Birth date</label>
-        <input type="date" @bind="user.birthdate" class="form-control">
+        <input type="date" @bind-value="user.birthdate" class="form-control">
     </div>
     @if(user.role == "teacher")
     {
         <div>
             <label>Instrument</label>
-            <input type="text" @bind="teacher.instrument" class="form-control">
+            <input type="text" @bind-value="teacher.instrument" class="form-control">
             <label>Location</label>
-            <input type="text" @bind="teacher.location" class="form-control">
+            <input type="text" @bind-value="teacher.location" class="form-control">
             <label>Price</label>
-            <input type="number" @bind="teacher.price" class="form-control">
+            <input type="number" @bind-value="teacher.price" class="form-control">
             <label>Group price</label>
-            <input type="number" @bind="teacher.group_price" class="form-control">
+            <input type="number" @bind-value="teacher.group_price" class="form-control">
         </div>
     }
 }
