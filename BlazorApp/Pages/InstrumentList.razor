@@ -14,6 +14,8 @@
 <PageTitle>Instruments</PageTitle>
 
 
+<a href="addnewinstrument">Add new insturment</a>
+
 <h3>Rented instruments</h3>
 <table class="table">
     <tr>
@@ -25,6 +27,7 @@
     </tr>
     @foreach (var instrument in rentedInstruments)
     {
+        
         <tr>
             <td>@instrument.name</td>
             <td>@instrument.description</td>
@@ -35,11 +38,12 @@
         </tr>
     }
 
-</table>
+        </table>
 <h3>Available instruments</h3>
 <table class="table">
 
     <tr>
+        <th></th>
         <th>Name</th>
         <th>Description</th>
         <th>Price</th>
@@ -49,7 +53,12 @@
 
     @foreach (var instrument in allInstruments)
     {
+
         <tr>
+            @if (true) //role permissions
+            {
+                <td><button @onclick="() => Delete(instrument.id)">&#10005; </button></td>
+            }
             <td>@instrument.name</td>
             <td>@instrument.description</td>
             <td>@instrument.rental_price</td>
@@ -135,7 +144,22 @@
         await js.InvokeVoidAsync("alert", "Order complete");
         navManager.NavigateTo("/listinstruments", true);
     }
+    async Task Delete(int instrument_id)
+    {
 
+
+        string sql = "DELETE FROM instruments WHERE id = " + instrument_id;
+
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { });
+        }
+
+
+        await js.InvokeVoidAsync("alert", "Instrument removed");
+        navManager.NavigateTo("/listinstruments", true);
+    }
 
     async Task ReadDbData()
     {
