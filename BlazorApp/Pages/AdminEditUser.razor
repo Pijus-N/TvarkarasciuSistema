@@ -40,10 +40,11 @@ else
     }
 }
 <br />
-<a class="btn btn-secondary" href="admin/manage_users" role="button">Back</a> <a class="btn btn-primary" role="button">Save</a>
+<a class="btn btn-secondary" href="admin/manage_users" role="button">Back</a> <a class="btn btn-primary" role="button" @onclick="UpdateUser" disabled="@loading">Save</a>
 
 @code {
     public bool loading_data = true;
+    public bool loading = false;
     [Parameter] public int user_id { get; set; }
     public User user;
     public Teacher teacher;
@@ -89,5 +90,22 @@ else
             var rows = await connection.QueryAsync<T>(query, new { });
             return rows.ToList();
         }
+    }
+
+    public async Task UpdateUser()
+    {
+        loading = true;
+        string query = $"UPDATE users SET name = '{user.name}', lastname = '{user.lastname}', email = '{user.email}', birthdate = '{user.birthdate.ToString("yyyy-MM-dd")}' " +
+                           $"WHERE id = {user.id}";
+        await SqlSaveData(query);
+        if(user.role == "teacher")
+        {
+            query = $"UPDATE teachers SET instrument = '{teacher.instrument}', location = '{teacher.location}', price = '{teacher.price}', group_price = '{teacher.group_price}' " +
+                           $"WHERE user_id = {user.id}";
+            await SqlSaveData(query);
+        }
+        await js.InvokeVoidAsync("alert", "User updated");
+        loading = false;
+
     }
 }

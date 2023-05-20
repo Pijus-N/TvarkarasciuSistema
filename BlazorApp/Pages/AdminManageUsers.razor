@@ -106,12 +106,20 @@ else
                     await SqlSaveData(query);
                     query = "delete from users where (id) = (SELECT '" + id + "')";
                     await SqlSaveData(query);
-                    navManager.NavigateTo("admin/manage_users");
                     break;
                 case "guardian":
+                    query = "delete from users where (id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);                    
                     break;
-
+                case "student":
+                    query = "delete from students where (user_id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);
+                    query = "delete from users where (id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);                    
+                    break;
             }
+            await js.InvokeVoidAsync("alert", "User deleted");
+            navManager.NavigateTo("admin/manage_users", forceLoad: true);
         }
         else
         {
