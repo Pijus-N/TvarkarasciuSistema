@@ -1,0 +1,128 @@
+﻿@page "/lessonlist"
+
+@using BlazorServer.Authentication
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+@using BlazorServer.Models
+@using MySqlConnector
+@using Dapper
+@using System.Data
+@inject IConfiguration _config
+
+<CascadingAuthenticationState>
+<AuthorizeView Roles="teacher">
+<Authorized>
+
+<PageTitle>Lesson List</PageTitle>
+<h1>Lesson List</h1>
+
+@if (lessons == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Location</th>
+                <th scope="col">Time</th>
+                <th scope="col">Student Count</th>
+                <th scope="col">Type</th>
+                <th scope="col">Instrument</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+        @{ int i = 1; }
+        @foreach (Lesson lesson in lessons)
+        {
+            int registered_students = 0;
+            
+            using (var connection = new MySqlConnection(_config.GetConnectionString("default")))
+            {
+                connection.Open();
+
+                using (var command = new MySqlCommand("SELECT COUNT(*) FROM registrations WHERE lesson_id = @lessonId;", connection))
+                {
+                    command.Parameters.AddWithValue("@lessonId", lesson.id);
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+                    registered_students = count;
+                }
+            }
+
+            <tr>
+                <th scope="row">@i</th>
+                <td>@lesson.location</td>
+                <td>@lesson.start_time</td>
+                <td>@registered_students / @lesson.student_count</td>
+                <td>@lesson.lesson_type</td>
+                <td>@lesson.instrument</td>
+                <td>
+                    <a class="btn btn-primary" role="button" href="userslist/@lesson.id">View students</a>
+                </td>
+                <td>
+                    <a class="btn btn-primary" role="button" href="editlesson/@lesson.id">Edit</a>
+                </td>               
+            </tr>
+            i++;
+        }
+        </tbody>    
+    </table>
+}
+
+
+
+
+
+@code {
+    List<Lesson> lessons = new List<Lesson>();
+    UserAccount session = new UserAccount();
+    Teacher session_teacher = new Teacher();
+
+    // 1. get teacher id
+    // 2. select lessons with teacher id
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            await GetSessionUser();
+
+            string query = "SELECT * FROM teachers WHERE (user_id) = (SELECT '" + session.Id + "') LIMIT 1"; // fetch user id
+            List<Teacher> teacher = await SqlLoadData<Teacher>(query);
+            session_teacher = teacher.First();
+
+            query = "select * from lessons where (teacher_id) = (SELECT '" + session_teacher.id + "')";        
+            lessons = await SqlLoadData<Lesson>(query);
+            StateHasChanged();
+        }
+      
+    }
+
+
+
+    public async Task GetSessionUser()
+    {
+        session = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
+}
+</Authorized>
+<NotAuthorized>
+    Sorry, there's nothing at this address.
+</NotAuthorized>
+</AuthorizeView>
+</CascadingAuthenticationState>

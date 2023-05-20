@@ -36,35 +36,59 @@
     <div>
         <label>Role</label>
         <InputSelect @bind-Value="model.role" class="form-select" required="required">
-            <option value="">select role (temporary)</option>
+            <option value="">select role</option>
             <option value="teacher">teacher</option>
             <option value="student">student</option>
             <option value="guardian">guardian</option>
-            <option value="administrator">administrator</option>
         </InputSelect>
     </div>
     @if (model.role == "teacher")
     {
         <br>
-        <h3>Teacher information (optional)</h3>
+        <h3>Teacher information (required)</h3>
         <div>
             <label>Instrument</label>
-            <input @bind-value="teacher_instrument" class="form-control"/>
+            <input @bind-value="teacher_instrument" class="form-control" required="required"/>
         </div>
         <div>
             <label>Location</label>
-            <input @bind-value="teacher_location" class="form-control"/>
+            <input @bind-value="teacher_location" class="form-control" required="required"/>
         </div>
         <div>
-            <label>Price</label> <!-- add data validation later -->
-            <input @bind-value="teacher_price" class="form-control"/>
+            <label>Price</label>
+            <InputNumber TValue="double" @bind-Value="teacher_price" class="form-control" required="required"/>
         </div>
         <div>
-            <label>Group_Price</label> <!-- add data validation later -->
-            <input @bind-value="teacher_group_price" class="form-control"/>
+            <label>Group_Price</label>
+            <InputNumber TValue="double" @bind-Value="teacher_group_price" class="form-control" required="required"/>
         </div>
     }
-    
+    @if (model.role == "guardian")
+    {
+        <br>
+        <h3>Student information (required)</h3>
+            <div class="form-group">
+            <label>Student's Name</label>
+            <InputText @bind-Value="student_name" class="form-control" required="required"/>
+        </div>
+        <div class="form-group">
+            <label>Student's Last Name</label>
+            <InputText @bind-Value="student_last_name" class="form-control" required="required"/>
+        </div>
+        <div class="form-group">
+            <label>Student's Email</label>
+            <InputText @bind-Value="student_email" class="form-control" required="required"/>
+        </div>
+        <div class="form-group">
+            <label>Student's Password</label>
+            <InputText @bind-Value="student_password" class="form-control" required="required"/>
+        </div>
+        <div class="form-group">
+            <label>Birth date</label>
+            <InputDate @bind-Value="student_birthdate" class="form-control" required="required"/>
+        </div>
+    }
+
     
     <br>
     <button disabled="@loading" class="btn btn-primary" type="submit">
@@ -81,7 +105,12 @@
     bool loading = false;
     private User model = new User();
 
-    string teacher_instrument, teacher_location, teacher_price, teacher_group_price = "";
+    string teacher_instrument, teacher_location = "";
+    double teacher_price = 0;
+    double teacher_group_price = 0;
+
+    string student_name, student_last_name, student_email, student_password = "";
+    DateTime student_birthdate;
 
     // makes a user in the database
     // does not check if there is a user registered with that email.
@@ -95,7 +124,7 @@
             + model.password + "','"
             + model.birthdate.ToString("yyyy-MM-dd HH:mm:ss") + "','"
             + model.role + "');";
-        SqlSaveData(query);
+        await SqlSaveData(query);
         switch(model.role)
         {
             case "teacher":
@@ -123,7 +152,7 @@
 
     public async void CreateTeacher()
     {
-        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1";
+        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1"; // fetch user id
         List<User> user = await SqlLoadData<User>(query);
 
         query = "INSERT INTO teachers (instrument, location, price, group_price, user_id) VALUES('"
@@ -132,23 +161,49 @@
             + teacher_price + "','"
             + teacher_group_price + "','"
             + user[0].id + "');";
-        await SqlSaveData(query);
+        await SqlSaveData(query); // create teacher
         Console.WriteLine("Teacher inserted.");
     }
 
     public async void CreateStudent()
     {
-        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1";
+        string query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1"; // fetch user id
         List<User> user = await SqlLoadData<User>(query);
         query = "INSERT INTO students (user_id) VALUES('"
             + user[0].id + "');";
-        await SqlSaveData(query);
+        await SqlSaveData(query); // create student
         Console.WriteLine("Student inserted.");
     }
 
     public async void CreateGuardian()
     {
-        // later
+        string query = "INSERT INTO users (name, lastname, email, password, birthdate, role) VALUES('"
+            + student_name + "','"
+            + student_last_name+ "','"
+            + student_email + "','"
+            + student_password + "','"
+            + student_birthdate.ToString("yyyy-MM-dd HH:mm:ss") + "','"
+            + "student" + "');";
+        await SqlSaveData(query); // create student user
+
+        query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + student_email + "','" + student_password + "') LIMIT 1"; // fetch student user id
+        List<User> studentUser = await SqlLoadData<User>(query);
+
+        query = "INSERT INTO students (user_id) VALUES('"
+            + studentUser[0].id + "');";
+        await SqlSaveData(query); // create student
+
+
+        query = "SELECT * FROM students WHERE (user_id) = (SELECT '" + studentUser[0].id + "') LIMIT 1"; // fetch student id
+        List<Student> student = await SqlLoadData<Student>(query);
+
+        query = "SELECT * FROM users WHERE (email, password) = (SELECT '" + model.email + "','" + model.password + "') LIMIT 1"; // fetch guardian user id
+        List<User> guardianUser = await SqlLoadData<User>(query);
+
+        query = "INSERT INTO guardians (user_id, student_id) VALUES('"
+            + guardianUser[0].id + "','" 
+            + student[0].id + "');";
+        await SqlSaveData(query); // create guardian
     }
 
     public async Task SqlSaveData(string query)
