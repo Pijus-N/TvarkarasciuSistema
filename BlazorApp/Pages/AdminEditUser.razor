@@ -1,0 +1,93 @@
+﻿@page "/admin/manage_users/{user_id:int}"
+@using BlazorServer.Models
+@using MySqlConnector
+@using Dapper
+@using System.Data
+@inject IConfiguration _config
+@inject IJSRuntime js
+
+<PageTitle>Admin</PageTitle>
+<h1>Edit User</h1>
+
+@if (loading_data)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        <label>Name</label>
+        <input type="text" @bind="user.name" class="form-control">
+        <label>Last name</label>
+        <input type="text" @bind="user.lastname" class="form-control">
+        <label>Email</label>
+        <input type="text" @bind="user.email" class="form-control">
+        <label>Birth date</label>
+        <input type="date" @bind="user.birthdate" class="form-control">
+    </div>
+    @if(user.role == "teacher")
+    {
+        <div>
+            <label>Instrument</label>
+            <input type="text" @bind="teacher.instrument" class="form-control">
+            <label>Location</label>
+            <input type="text" @bind="teacher.location" class="form-control">
+            <label>Price</label>
+            <input type="number" @bind="teacher.price" class="form-control">
+            <label>Group price</label>
+            <input type="number" @bind="teacher.group_price" class="form-control">
+        </div>
+    }
+}
+<br />
+<a class="btn btn-secondary" href="admin/manage_users" role="button">Back</a> <a class="btn btn-primary" role="button">Save</a>
+
+@code {
+    public bool loading_data = true;
+    [Parameter] public int user_id { get; set; }
+    public User user;
+    public Teacher teacher;
+    public int student_id;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "select * from users where (id) = (SELECT '" + user_id + "') LIMIT 1";
+
+        List<User> users = await SqlLoadData<User>(query);
+        user = users.First();
+
+        switch(user.role)
+        {
+            case "teacher":
+                query = "select * from teachers where (user_id) = (SELECT '" + user_id + "') LIMIT 1";
+                List<Teacher> teachers = await SqlLoadData<Teacher>(query);
+                teacher = teachers.First();
+                break;
+            case "guardian":
+                query = "select student_id from guardians where (user_id) = (SELECT '" + user_id + "') LIMIT 1";
+                List<int> student_ids = await SqlLoadData<int>(query);
+                student_id = student_ids.First();
+                break;
+        }
+        loading_data = false;
+    }
+
+    public async Task SqlSaveData(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(query, new { });
+        }
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
+}
