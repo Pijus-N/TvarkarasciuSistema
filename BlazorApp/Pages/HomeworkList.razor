@@ -1,0 +1,263 @@
+﻿@page "/Homework/{myvalue}"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+
+<p id="date-time"></p>
+<PageTitle>Homework</PageTitle>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Homework Page</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+  @if (dataLoaded){
+    <div class="container">
+        @if(user.Role=="teacher"){
+            <a href="/addnewhomework" class="add-new-homework">Add New Homework</a>
+        }
+      <h1>Homework List</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Issuer</th>
+            <th>Student</th>
+            <th>Task</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+           
+                @for (int i = 0; i < allHomework.Count; i++){
+                    Homework day = allHomework[i];
+                    @if(day.isDeleted==0){
+                        @if(user.Id.ToString()==allTeacherIds[i] && user.Role=="teacher"){
+                            
+                        
+                                <tr>
+                                    <td>@allTeacherNames[i]</td>
+                                    <td>@allStudentNames[i]</td>
+                                    <td>@day.description</td>
+                                    <td>@day.assignment_date</td>
+                                    <td>@day.completion_data</td>
+                                    @if(user.Role=="teacher"){
+                                        <td><a href="/edithomework/@day.id" class="modify-homework">Modify</a></td>
+                                    }
+                                </tr>
+                        }
+                        @if(user.Id.ToString()==allStudentsIds[i] && user.Role=="student"){
+                                <tr>
+                                    <td>@allTeacherNames[i]</td>
+                                    <td>@allStudentNames[i]</td>
+                                    <td>@day.description</td>
+                                    <td>@day.assignment_date</td>
+                                    <td>@day.completion_data</td>
+                                </tr>
+                        }
+
+                    }
+                }
+
+
+            
+        
+          
+          <!-- Add more homework rows here -->
+        </tbody>
+      </table>
+      
+    </div>
+  }
+  </body>
+   
+</html>
+
+
+
+
+@code {
+    [Parameter]
+    public string myvalue { get; set; }
+    public List<Homework> allHomework = new List<Homework>();
+    public List<String> allTeacherNames = new List<String>();
+    public List<String> allTeacherIds = new List<String>();
+    public List<String> allStudentsIds = new List<String>();
+      public List<String> allStudentNames = new List<String>();
+    public UserAccount user = new UserAccount();
+    bool dataLoaded = false;
+    protected override async Task OnInitializedAsync()
+    {
+
+        
+        try
+        {
+            await GetSessionUser();
+        }
+        catch 
+        {
+            // Ignore
+        }
+        await ReadDbData();
+       
+        StateHasChanged();
+    }
+
+     public async Task GetSessionUser()
+    {
+
+        
+
+        try
+        {
+            user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+        }
+        catch (JSDisconnectedException ex)
+        {
+            // Ignore
+        }
+
+    }
+
+     async Task ReadDbData()
+    {
+
+
+        // check if user exists in database
+        string sql = "select * from homework";
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<Homework>(sql);
+            rows = rows.ToList();
+
+            foreach (var row in rows)
+            {
+                Homework homework = row;
+                //Console.WriteLine("Data");
+                //Console.WriteLine(Lesson.date);
+                //Console.WriteLine(DateTime.Parse(Lesson.date.Split(' ')[0]));
+                allHomework.Add(homework);
+                string teacherName = await GetTeacherName(homework.teacher_id);
+                allStudentNames.Add(await GetStudentName(homework.student_id));
+                allTeacherNames.Add(teacherName);
+                allTeacherIds.Add(await GetTeacherId(homework.teacher_id));
+                allStudentsIds.Add(await GetStudentId(homework.student_id));
+                //Console.WriteLine(allLessons.Count);
+
+
+            }
+
+
+
+
+        }
+
+
+        dataLoaded = true;
+    }
+
+    public async Task<string> GetTeacherName(int id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT u.Name
+        FROM Teachers t
+        INNER JOIN Users u ON u.Id = t.user_id
+        WHERE t.Id = @Id
+    ";
+    string name;
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = id };
+            var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+            return result;
+        }
+    //string name = string.Empty;
+
+    
+
+    return name;
+
+
+
+
+    }
+
+    public async Task<string> GetStudentName(int id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT u.Name
+        FROM Students t
+        INNER JOIN Users u ON u.Id = t.user_id
+        WHERE t.Id = @Id
+    ";
+
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = id };
+            var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+            return result;
+        }
+ 
+
+
+
+
+    }
+
+    public async Task<string> GetStudentId(int students_id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT user_id from students where id = @Id
+    ";
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = students_id };
+            var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+            return result;
+        }
+    }
+
+    public async Task<string> GetTeacherId(int students_id){
+
+        // this thing should be a function somewhere
+        string connstring = _config.GetConnectionString("default");
+
+        string query = @"
+        SELECT user_id from teachers where id = @Id
+    ";
+
+    using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var parameters = new { Id = students_id };
+            var result = await connection.QueryFirstOrDefaultAsync<string>(query, parameters);
+            return result;
+        }
+    }
+
+}
+
+
+
+
