@@ -1,0 +1,107 @@
+@page "/addnewinstrument"
+@using BlazorServer.Models
+@using BlazorServer.Authentication
+@using System.Data
+@using MySqlConnector
+@using Dapper
+@inject IJSRuntime js
+@inject IConfiguration _config
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+
+ 
+<PageTitle>Lesson Creation</PageTitle>
+<h1>Add new instrument</h1>
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else {
+<p><i>Role: @user.Role</i></p>
+}
+
+<EditForm Model="@model" OnValidSubmit="@AddNewInstruments" OnInvalidSubmit="@InvalidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary/>
+    <div class="form-group">
+        <label>Name</label>
+        <InputText @bind-Value="model.name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <InputTextArea @bind-Value="model.description" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Price</label>
+        <InputNumber @bind-Value="model.rental_price" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Type</label>
+        <InputText @bind-Value="model.instrument_type" class="form-control" />
+    </div>
+    <br>
+    <button disabled="@loading" class="btn btn-primary" type="submit">
+        @if (loading) 
+        {
+            <span class="spinner-border spinner-border-sm mr-1"></span>
+        }
+        Add New Instrument
+    </button>
+</EditForm>
+
+
+@code {
+
+    bool loading = false;
+    public UserAccount user = new UserAccount();
+
+
+
+    private Instrument model = new Instrument();
+
+    // adds a lesson in the database
+    private async Task AddNewInstruments() 
+    {
+        loading = true;     // silly button effect to show that something is happening
+
+        string sql = "INSERT INTO instruments (name, description, rental_price, instrument_type, instrument_state) VALUES('" 
+        + model.name + "','"
+        + model.description + "','"
+        + model.rental_price + "','"
+        + model.instrument_type + "','"
+        + "Available" + "');";
+
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(sql, new { });
+        }
+
+        loading = false;
+        await js.InvokeVoidAsync("alert", "Instrument Added");
+        navManager.NavigateTo("/listinstruments", true);
+    }
+    protected override void OnParametersSet()
+    {
+
+
+    }
+
+    private async Task InvalidSubmit()
+    {
+        await js.InvokeVoidAsync("alert", "Incorrect data. Please try again.");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSessionUser();
+        
+    }
+
+    public async Task GetSessionUser()
+    {
+        user = await _currentSession.GetItemAsync<UserAccount>("SessionUser");
+    }
+
+}
