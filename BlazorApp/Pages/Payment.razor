@@ -77,8 +77,7 @@ else
     public async Task<string> ProcessPayment(string cardNumber, string expMonth, string expYear, string cvc, decimal value)
     {
         loading = true;
-        //sk_test_51NAGIGCE30S0PlSIDIMYgrKxIJ2hwvU9eSktUlIA1K0yu08DDAdAc5ksTTGMQJ0TRXNsvZWirSWGJ0rrqGTDmw4d00MRd7gLdh
-        StripeConfiguration.ApiKey = "sk_test_51NAGIGCE30S0PlSIDIMYgrKxIJ2hwvU9eSktUlIA1K0yu08DDAdAc5ksTTGMQJ0TRXNsvZWirSWGJ0rrqGTDmw4d00MRd7gLdh";
+        StripeConfiguration.ApiKey = "sk_test_51NAI6vJSVGmoMwqCaoDIplm7NtlqwW71RO7ssor3sz3buR2vWIWtQoEHHLZv5xTH06hebZemGVpB9g8LuOZvvokB00ounNDl4v";
         var optionToken = new TokenCreateOptions
         {
             Card = new TokenCardOptions
