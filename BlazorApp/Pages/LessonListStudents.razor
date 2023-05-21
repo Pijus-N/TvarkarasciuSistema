@@ -31,6 +31,8 @@ else
                 <th scope="col">Grade</th>
                 <th scope="col">Attendance</th>
                 <th scope="col">Note</th>
+                <th scope="col">Payment</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
@@ -65,6 +67,11 @@ else
                         <input type="checkbox" @bind="assessments[index].Attendance">
                     </td>
                     <td><textarea @bind="assessments[index].Note" maxlength="200"></textarea></td>
+                    <td style="color: @(student_paid[i].Item1 == 1 ? "green" : "red")">
+                        @(student_paid[i].Item1 == 1 ? "Paid" : "Not paid") 
+                        
+                    </td>
+                    <td><a type="button" class="btn btn-primary" @onclick="() => TogglePayment(index)">Toggle payment</a> </td>
                 </tr>
                 i++;
             }
@@ -80,13 +87,13 @@ else
     Save
 </a>
 
-@code {
-    bool loadingdata = true;
+            @code {
+                bool loadingdata = true;
     bool loading = false;
     [Parameter] public int lessonId { get; set; }
     List<int> studentIds = new List<int>();
     List<User> students = new List<User>();
-
+    List<Tuple<int, int>> student_paid = new List<Tuple<int, int>>();
 
 
     List<Assessment> assessments = new List<Assessment>();
@@ -101,13 +108,17 @@ else
 
         foreach(int student_id in studentIds)
         {
-            query = "SELECT * FROM students WHERE (id) = (SELECT '" + student_id + "') LIMIT 1"; // fetch user id
-            List<Student> student = await SqlLoadData<Student>(query);
+                query = "SELECT * FROM students WHERE (id) = (SELECT '" + student_id + "') LIMIT 1"; // fetch user id
+                List<Student> student = await SqlLoadData<Student>(query);
 
-            query = "SELECT * FROM users WHERE (id) = (SELECT '" + student.First().user_id + "') LIMIT 1"; // fetch user
-            List<User> user = await SqlLoadData<User>(query);
+                query = "SELECT * FROM users WHERE (id) = (SELECT '" + student.First().user_id + "') LIMIT 1"; // fetch user
+                List<User> user = await SqlLoadData<User>(query);
 
-            students.Add(user.First()); // add to list         
+                query = "SELECT paid FROM registrations WHERE (student_id) = (SELECT '" + student_id + "') LIMIT 1"; // fetch user
+                List<int> payments = await SqlLoadData<int>(query);
+
+                students.Add(user.First()); // add to list  
+                student_paid.Add(new Tuple<int, int>(payments.First(), student_id));
         }
 
         loadingdata = false;
@@ -117,25 +128,32 @@ else
     {
         foreach (Assessment assessment in assessments)
         {
-            if (assessment.lesson_id != -1)
-            {
-                string query = $"UPDATE assessments SET grade = {assessment.Grade}, attendance = {assessment.Attendance}, note = '{assessment.Note}' " +
-                           $"WHERE id = {assessment.Id}";
-                await SqlSaveData(query);
-            }
-            else
-            {
-                int attendance = 0;
-                if (assessment.Attendance) { attendance = 1; } // workaround because otherwise assessment.Attendance always gives 0
-                string query = "INSERT INTO assessments (grade, note, praise, attendance, lesson_id, student_id) VALUES('"
-                    + assessment.Grade + "','"  //grade
-                    + assessment.Note + "','"   //note
-                    + null + "','"              //praise(should be deleted honestly, im just gonna always set this to null)
-                    + attendance + "','"        //attendance
-                    + lessonId + "','"          //lesson_id
-                    + assessment.student_id + "');"; //student_id
-                await SqlSaveData(query);
-            }
+                string query = "";
+                if (assessment.lesson_id != -1)
+                {
+                    query = $"UPDATE assessments SET grade = {assessment.Grade}, attendance = {assessment.Attendance}, note = '{assessment.Note}' " +
+                                $"WHERE id = {assessment.Id}";
+                    await SqlSaveData(query);
+                }
+                else
+                {
+                    int attendance = 0;
+                    if (assessment.Attendance) { attendance = 1; } // workaround because otherwise assessment.Attendance always gives 0
+                    query = "INSERT INTO assessments (grade, note, praise, attendance, lesson_id, student_id) VALUES('"
+                        + assessment.Grade + "','"  //grade
+                        + assessment.Note + "','"   //note
+                        + null + "','"              //praise(should be deleted honestly, im just gonna always set this to null)
+                        + attendance + "','"        //attendance
+                        + lessonId + "','"          //lesson_id
+                        + assessment.student_id + "');"; //student_id
+                    await SqlSaveData(query);
+                }                
+        }
+        foreach (Tuple<int, int> tuple in student_paid)
+        {
+            string query = $"UPDATE registrations SET paid = {tuple.Item1} " +
+                            $"WHERE student_id = {tuple.Item2} AND lesson_id = {lessonId}";
+            await SqlSaveData(query);
         }
         await js.InvokeVoidAsync("alert", "Grades updated!");
     }
@@ -145,7 +163,7 @@ else
         string connstring = _config.GetConnectionString("default");
         using (IDbConnection connection = new MySqlConnection(connstring))
         {
-            await connection.ExecuteAsync(query, new { });
+                await connection.ExecuteAsync(query, new { });
         }
     }
 
@@ -156,6 +174,20 @@ else
         {
             var rows = await connection.QueryAsync<T>(query, new { });
             return rows.ToList();
+        }
+    }
+
+    public void TogglePayment(int index)
+    {
+        if (student_paid[index].Item1 == 1) 
+        {
+            var updatedTuple = new Tuple<int, int>(0, student_paid[index].Item2);
+            student_paid[index] = updatedTuple; 
+        }
+        else 
+        { 
+            var updatedTuple = new Tuple<int, int>(1, student_paid[index].Item2);
+            student_paid[index] = updatedTuple; 
         }
     }
 }

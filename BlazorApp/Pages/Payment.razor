@@ -1,0 +1,55 @@
+﻿@page "/payment/{lessonid:int}/{studentid:int}"
+@using BlazorServer.Authentication
+@inject Blazored.SessionStorage.ISessionStorageService _currentSession
+@using BlazorServer.Models
+@using MySqlConnector
+@using Dapper
+@using System.Data
+@inject IConfiguration _config
+@using Stripe
+
+<PageTitle>Payment</PageTitle>
+<h1>Payment for class</h1>
+
+
+@code
+{
+
+    public async Task ProcessPayment(string cardNumber, int expMonth, int expYear, string cvc, decimal value)
+    {
+        //sk_test_51NAGIGCE30S0PlSIDIMYgrKxIJ2hwvU9eSktUlIA1K0yu08DDAdAc5ksTTGMQJ0TRXNsvZWirSWGJ0rrqGTDmw4d00MRd7gLdh
+        StripeConfiguration.ApiKey = "sk_test_51NAGIGCE30S0PlSIDIMYgrKxIJ2hwvU9eSktUlIA1K0yu08DDAdAc5ksTTGMQJ0TRXNsvZWirSWGJ0rrqGTDmw4d00MRd7gLdh";
+        var optionToken = new TokenCreateOptions
+        {
+            Card = new TokenCardOptions
+            {
+                Number = cardNumber,
+                ExpMonth = expMonth,
+                ExpYear = expYear,
+                Cvc = cvc
+            }
+        }
+
+        var serviceToken = new TokenService();
+        Token stripetoken = await serviceToken.CreateAsync(optionToken);
+    }
+
+	public async Task SqlSaveData(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(query, new { });
+        }
+    }
+
+    public async Task<List<T>> SqlLoadData<T>(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            var rows = await connection.QueryAsync<T>(query, new { });
+            return rows.ToList();
+        }
+    }
+}
