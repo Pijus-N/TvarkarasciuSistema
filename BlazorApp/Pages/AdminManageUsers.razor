@@ -1,14 +1,17 @@
-﻿@page "/admin_manage_users"
+﻿@page "/admin/manage_users"
 @using BlazorServer.Models
 @using MySqlConnector
 @using Dapper
 @using System.Data
 @inject IConfiguration _config
+@inject IJSRuntime js
+@inject NavigationManager navManager
 
 <PageTitle>Admin</PageTitle>
-<h1>Admin</h1>
+<h1>Manage Users</h1>
 
 <a class="btn btn-primary" href="admin" role="button">Back</a>
+@deleted_id @deleted_name
 
 @if (users == null)
 {
@@ -24,6 +27,8 @@ else
                 <th scope="col">Email</th>
                 <th scope="col">Name</th>
                 <th scope="col">Role</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
@@ -37,6 +42,12 @@ else
                 <td>@user.email</td>
                 <td>@user.name @user.lastname</td>
                 <td>@user.role</td>
+                <td>
+                    <a class="btn btn-primary" role="button" href="admin/manage_users/@user.id" disabled="@loading">Edit</a>
+                </td>
+                <td>
+                     <a class="btn btn-danger" role="button" @onclick="() => DeleteUser(user.id)" disabled="@loading">Delete</a>
+                </td>
             </tr>
             i++;
         }
@@ -47,12 +58,24 @@ else
 
 @code {
     List<User> users = new List<User>();
+    int deleted_id = 0;
+    string deleted_name = "";
+    public bool loading = false;
 
     protected override async Task OnInitializedAsync()
     {
         string query = "select * from users";
 
         users = await SqlLoadData<User>(query);
+    }
+
+    public async Task SqlSaveData(string query)
+    {
+        string connstring = _config.GetConnectionString("default");
+        using (IDbConnection connection = new MySqlConnection(connstring))
+        {
+            await connection.ExecuteAsync(query, new { });
+        }
     }
 
     public async Task<List<T>> SqlLoadData<T>(string query)
@@ -63,5 +86,46 @@ else
             var rows = await connection.QueryAsync<T>(query, new { });
             return rows.ToList();
         }
+    }
+
+    public async Task DeleteUser(int id)
+    {
+        bool confirmed = await js.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            deleted_id = id;
+
+            string query = "select * from users where (id) = (SELECT '" + id + "') LIMIT 1";
+
+            List<User> deleted_user = await SqlLoadData<User>(query);
+
+            switch (deleted_user.First().role)
+            {
+                case "teacher":
+                    query = "delete from teachers where (user_id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);
+                    query = "delete from users where (id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);
+                    break;
+                case "guardian":
+                    query = "delete from users where (id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);                    
+                    break;
+                case "student":
+                    query = "delete from students where (user_id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);
+                    query = "delete from users where (id) = (SELECT '" + id + "')";
+                    await SqlSaveData(query);                    
+                    break;
+            }
+            await js.InvokeVoidAsync("alert", "User deleted");
+            navManager.NavigateTo("admin/manage_users", forceLoad: true);
+        }
+        else
+        {
+            // User clicked "No" or closed the dialog
+            // Handle the alternative action or do nothing
+        }
+        
     }
 }
