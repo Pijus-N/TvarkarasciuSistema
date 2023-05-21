@@ -6,17 +6,77 @@
 @using Dapper
 @using System.Data
 @inject IConfiguration _config
+@inject IJSRuntime js
+@inject NavigationManager navManager;
 @using Stripe
 
 <PageTitle>Payment</PageTitle>
-<h1>Payment for class</h1>
+@if(lesson == null)
+{
+    <a>loading...</a>
+}
+else
+{
+    <div>
+        <h1>Payment for lesson</h1>
+        <h3>@lesson.instrument @lesson.start_time</h3>
+        <h3>Price: @lesson.price</h3>
+
+        Card number
+        <input type="text" class="form-control"/>
+        Expiration month
+        <input type="text" class="form-control"/>
+        Expiration year
+        <input type="text" class="form-control"/>
+        CVC
+        <input type="text" class="form-control"/>
+        <br/>
+        <a type="button" class="btn btn-secondary" href="gradeslist" disabled="@loading">Back</a>
+        <button type="button" class="btn btn-primary" @onclick='UpdateDatabase' disabled="@loading">Pay</button>
+    </div>
+}
+
+
 
 
 @code
 {
+    [Parameter] public int lessonId { get; set; }
+    [Parameter] public int studentId { get; set; }
+    public bool loading = false;
+    public Lesson lesson = new Lesson();
 
-    public async Task ProcessPayment(string cardNumber, int expMonth, int expYear, string cvc, decimal value)
+    protected override async Task OnInitializedAsync()
     {
+        string query = $"SELECT * FROM lessons WHERE id = {lessonId}";
+        List<Lesson> lessons = await SqlLoadData<Lesson>(query);
+        lesson = lessons.First();
+    }
+
+    public async void UpdateDatabase()
+    {
+        decimal lesson_price = new decimal(lesson.price * 100);
+        string payment = await ProcessPayment("4242424242424242", "4", "30", "420", lesson_price);
+
+
+        if (payment == "Success")
+        {
+            string query = $"UPDATE registrations SET paid = 1 " +
+                                $"WHERE lesson_id = {lessonId} AND student_id = {studentId}";
+            await SqlSaveData(query);
+            await js.InvokeVoidAsync("alert", "Payment processed");
+            navManager.NavigateTo("gradeslist");
+        }
+        else
+        {
+            await js.InvokeVoidAsync("alert", "Payment failed. Please try again");
+        }
+
+    }
+
+    public async Task<string> ProcessPayment(string cardNumber, string expMonth, string expYear, string cvc, decimal value)
+    {
+        loading = true;
         //sk_test_51NAGIGCE30S0PlSIDIMYgrKxIJ2hwvU9eSktUlIA1K0yu08DDAdAc5ksTTGMQJ0TRXNsvZWirSWGJ0rrqGTDmw4d00MRd7gLdh
         StripeConfiguration.ApiKey = "sk_test_51NAGIGCE30S0PlSIDIMYgrKxIJ2hwvU9eSktUlIA1K0yu08DDAdAc5ksTTGMQJ0TRXNsvZWirSWGJ0rrqGTDmw4d00MRd7gLdh";
         var optionToken = new TokenCreateOptions
@@ -28,10 +88,42 @@
                 ExpYear = expYear,
                 Cvc = cvc
             }
-        }
+        };
 
         var serviceToken = new TokenService();
         Token stripetoken = await serviceToken.CreateAsync(optionToken);
+
+        var customer = new Stripe.Customer
+        {
+            Name = "Name",
+            Address = new Address
+            {
+                Country = "Lithuania",
+                City = "Kaunas",
+                Line1 = "Kauno gatve 55",
+                PostalCode = "69420",
+            }
+        };
+
+        var options = new ChargeCreateOptions()
+        {
+            Amount = Convert.ToInt32(value),
+            Currency = "EUR",
+            Description = "Description",
+            Source = stripetoken.Id,
+        };
+
+        var service = new ChargeService();
+        Charge charge = await service.CreateAsync(options);
+
+        if (charge.Paid)
+        {
+            return "Success";
+        }
+        else
+        {
+            return "Fail";
+        }
     }
 
 	public async Task SqlSaveData(string query)
