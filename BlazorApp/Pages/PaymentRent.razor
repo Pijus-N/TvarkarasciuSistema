@@ -60,8 +60,9 @@ else
 
         if (payment == "Success")
         {
-            string query = $"UPDATE `instruments` SET paid = 1, instrument_state = 'Reserved', renter_id = {renter_id} WHERE id = {instrument_id}";
+            string query = $"UPDATE `instruments` SET instrument_state = 'Reserved', renter_id = {renter_id} WHERE id = {instrument_id}";
             await SqlSaveData(query);
+            query = $"INSERT INTO `rental_records`(`rental_start`, `rental_end`, `instrument_id`) VALUES ({DateTime.Now.Date},{DateTime.Now.AddDays(30).Date},{instrument_id}) ";
             await js.InvokeVoidAsync("alert", "Payment processed");
             navManager.NavigateTo("listinstruments");
         }
