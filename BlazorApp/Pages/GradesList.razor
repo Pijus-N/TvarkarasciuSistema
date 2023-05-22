@@ -8,46 +8,76 @@
 @inject IConfiguration _config
 
 <CascadingAuthenticationState>
-<AuthorizeView Roles="student, guardian">
-<Authorized>
+    <AuthorizeView Roles="student, guardian">
+        <Authorized>
 
-<PageTitle>Grade List</PageTitle>
-<h1>Grade List</h1>
+        <PageTitle>Grade List</PageTitle>
+        <h1>Grade List</h1>
 
-@if (loading == true)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Lesson</th>
-                <th scope="col">Grade</th>
-                <th scope="col">Attendance</th>
-                <th scope="col">Note</th>
-            </tr>
-        </thead>
-        <tbody>
-        @{ int i = 1; }
-        @foreach (Tuple<Lesson,Assessment> tuple in tuple_list)
+        @if (loading == true)
         {
-            <tr>
-                <th scope="row">@i</th>
-                <td>@tuple.Item1.start_time @tuple.Item1.instrument</td>
-                <td>@tuple.Item2.Grade</td>
-                <td style="color: @(tuple.Item2.Attendance == true ? "green" : "red")">@(tuple.Item2.Attendance == true ? "present" : "absent")</td>
-                <td>@tuple.Item2.Note</td>
-            </tr>
-            i++;
+            <p><em>Loading...</em></p>
         }
-        </tbody>    
-    </table>
-}
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Lesson</th>
+                        <th scope="col">Grade</th>
+                        <th scope="col">Attendance</th>
+                        <th scope="col">Note</th>
+                        <th scope="col">Payment</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @{ int i = 1; }
+                @for (int j = 0; j < tuple_list.Count(); j++)
+                {
+                    <tr>
+                        <th scope="row">@i</th>
+                        <td>@tuple_list[j].Item1.start_time @tuple_list[j].Item1.instrument</td>
+                        <td>
+                            @(tuple_list[j].Item2.Grade == -1 ? "No grade" : tuple_list[j].Item2.Grade)
+                        </td>
+                        
+                        @if(DateTime.Today < tuple_list[j].Item1.start_time)
+                        {
+                            <td><a>Scheduled</a></td>
+                        }
+                        else
+                        {
+                            <td style="color: @(tuple_list[j].Item2.Attendance == true ? "green" : "red")">
+                                @(tuple_list[j].Item2.Attendance == true ? "present" : "absent")   
+                            </td>
+                        }
+                            
+                        
+                        <td>@tuple_list[j].Item2.Note</td>
+                        <td style="color: @(payments[j] == 1 ? "green" : "red")">
+                            @(payments[j] == 1 ? "Paid" : "Not paid")                         
+                        </td>
+                        @if (payments[j] == 0)
+                        {
+                            <td>
+                                <a type="button" class="btn btn-primary" href="payment/@(tuple_list[j].Item1.id)/@student_id">Pay</a>
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
 
-</Authorized>
+                    </tr>
+                    i++;
+                }
+                </tbody>    
+            </table>
+        }
+
+        </Authorized>
 
 
 
@@ -55,7 +85,10 @@ else
     bool loading = true;
     UserAccount session = new UserAccount();
     List<Tuple<Lesson, Assessment>> tuple_list = new List<Tuple<Lesson, Assessment>>();
-        List<Teacher> teacher_list = new List<Teacher>();
+    List<Tuple<int, int>> student_and_lesson_id = new List<Tuple<int, int>>();
+    List<Teacher> teacher_list = new List<Teacher>();
+    List<int> payments = new List<int>();
+    int student_id;
 
     // session user id  → student id → registration → lesson
     // student_id → select id from students where user_id = session_id
@@ -64,14 +97,14 @@ else
     // for each registration in registrations i could select a specific lesson and assessment and smack it into a list of tuples
 
     // fuck i forgot about teacher info
+    // forget it we can do without it, its too much work
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender)
         {
-            await GetSessionUser();
-            int student_id;
+            await GetSessionUser();            
             string query = "";
             if (session.Role == "guardian")
             {
@@ -86,27 +119,41 @@ else
                 student_id = student_id_list.First();
             }
 
-            query = "SELECT lesson_id FROM registrations WHERE (student_id) = (SELECT '" + student_id + "')"; // fetch user id
+            query = "SELECT lesson_id FROM registrations WHERE (student_id) = (SELECT '" + student_id + "')"; // get all registrations
             List<int> registrations_lesson_ids = await SqlLoadData<int>(query);          
 
-            foreach(int lesson_id in registrations_lesson_ids)
+            foreach(int lesson_id in registrations_lesson_ids) // go through every lesson
             {
-                query = "select * FROM assessments WHERE (lesson_id, student_id) = (SELECT '" + lesson_id + "','" + student_id + "') LIMIT 1";
+                query = "select * FROM lessons WHERE (id) = (SELECT '" + lesson_id + "') LIMIT 1"; // get a lesson to put into a tuple late
+                List<Lesson> lesson_list = await SqlLoadData<Lesson>(query);
+
+
+
+                query = "select * FROM assessments WHERE (lesson_id, student_id) = (SELECT '" + lesson_id + "','" + student_id + "') LIMIT 1"; // try to get an assessment
                 List<Assessment> assessment_list = await SqlLoadData<Assessment>(query);
 
-                if (assessment_list.Count() > 0)
+                if (assessment_list.Count() > 0) // if an assessment exists for that lesson
                 {
-                    query = "select * FROM lessons WHERE (id) = (SELECT '" + lesson_id + "') LIMIT 1";
-                    List<Lesson> lesson_list = await SqlLoadData<Lesson>(query);
-
-                    tuple_list.Add(new Tuple<Lesson, Assessment>(lesson_list.First(), assessment_list.First()));
+                    tuple_list.Add(new Tuple<Lesson, Assessment>(lesson_list.First(), assessment_list.First())); // put it into the tuple list (lesson, assessment)                    
+                }
+                else
+                {
+                    Assessment assessment = new Assessment();
+                    assessment.Grade = -1;
+                    assessment.Attendance = false;
+                    assessment.Note = "";
+                    tuple_list.Add(new Tuple<Lesson, Assessment>(lesson_list.First(), assessment));
                 }
 
+                query = "SELECT paid FROM registrations WHERE (lesson_id, student_id) = (SELECT '" + lesson_list.First().id + "','" + student_id + "')";
+                List<int> payments_query = await SqlLoadData<int>(query); // get payment info
+                payments.Add(payments_query.First()); // the indexes for payments should match the indexes in the tuple. (there 1000% is a better way, but we're running out of time)
             }
             loading = false;
+            tuple_list.Reverse();
+            payments.Reverse();
             StateHasChanged();
-
-            loading = false;
+            loading = false; // idk which comes first and which works so i just do both
         }
       
     }
