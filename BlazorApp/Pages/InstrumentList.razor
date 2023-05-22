@@ -122,27 +122,29 @@
     async Task Rent(int instrument_id)
     {
         int user_id = user.Id;
-        string connstring = _config.GetConnectionString("default");
 
-        using (MySqlConnection connection = new MySqlConnection(connstring))
-        {
+        navManager.NavigateTo($"rent/{instrument_id}/{user_id}");
+        //string connstring = _config.GetConnectionString("default");
 
-            connection.Open();
+        //using (MySqlConnection connection = new MySqlConnection(connstring))
+        //{
 
-            string query = "UPDATE `instruments` SET instrument_state = 'Reserved', renter_id = @renter WHERE instruments.id = @instrument";
+        //    connection.Open();
 
-            using (MySqlCommand command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@renter", user_id);
-                command.Parameters.AddWithValue("@instrument", instrument_id);
+        //    string query = "UPDATE `instruments` SET instrument_state = 'Reserved', renter_id = @renter WHERE instruments.id = @instrument";
 
-                int rowsAffected = command.ExecuteNonQuery();
-            }
+        //    using (MySqlCommand command = new MySqlCommand(query, connection))
+        //    {
+        //        command.Parameters.AddWithValue("@renter", user_id);
+        //        command.Parameters.AddWithValue("@instrument", instrument_id);
 
-        }
+        //        int rowsAffected = command.ExecuteNonQuery();
+        //    }
 
-        await js.InvokeVoidAsync("alert", "Order complete");
-        navManager.NavigateTo("/listinstruments", true);
+        //}
+
+        //await js.InvokeVoidAsync("alert", "Order complete");
+        //navManager.NavigateTo("/listinstruments", true);
     }
     async Task Delete(int instrument_id)
     {
